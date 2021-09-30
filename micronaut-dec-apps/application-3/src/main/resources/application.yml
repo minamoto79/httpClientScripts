@@ -1,0 +1,8 @@
+micronaut:
+  server:
+    port: 7070
+    netty:
+      access-logger:
+        enabled: true
+
+
