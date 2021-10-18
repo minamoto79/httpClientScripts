@@ -1,0 +1,28 @@
+###
+GET http://localhost:8080/users
+
+###
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "name": "Peter Adams"
+}
+
+###
+
+POST http://localhost:8081/products
+Content-Type: application/json
+
+{
+  "title": "Apples",
+  "description": "Red fruits"
+}
+
+###
+
+GET http://localhost:8081/products
+
+###
+
+GET http://localhost:8082/payments

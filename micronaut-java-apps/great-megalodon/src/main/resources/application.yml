@@ -1,0 +1,5 @@
+micronaut:
+  application:
+    name: greatMegalodon
+  server:
+    port: 8080
