@@ -21,7 +21,7 @@ import org.springframework.web.client.postForObject
 class App1Controller @Autowired constructor(private val app2: App2){
     @RequestMapping("/app1", method = [RequestMethod.GET])
     fun index() = buildString {
-        val app2response = app2.app2()
+        val app2response = app2.app2("ivan")
         appendLine("Greeting from app1, app2 $app2response")
     }
 }

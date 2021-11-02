@@ -5,21 +5,21 @@ import org.springframework.boot.runApplication
 import org.springframework.cloud.openfeign.EnableFeignClients
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
 @FeignClient("App3Client", url = "http://localhost:7070")
 interface App3 {
-    @PostMapping("/app3")
-    fun app3():String
+    @PostMapping("/app3/{age}")
+    fun app3(@PathVariable("age") age: Int):String
 }
 
 @RestController
 @ComponentScan("com.example.apps.app3")
 class App3Controller : App3 {
-    @PostMapping("/app3")
-    override fun app3() = buildString {
-        appendLine("Greeting from app3")
+    override fun app3(age: Int) = buildString {
+        appendLine("Greeting from app3: $age")
     }
 
 }

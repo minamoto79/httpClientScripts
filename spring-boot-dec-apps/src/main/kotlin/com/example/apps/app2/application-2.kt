@@ -9,23 +9,22 @@ import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.FeignClientsConfiguration
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Import
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.*
 
 @FeignClient("App2Client", url = "http://localhost:8080")
 interface App2 {
-    @PostMapping("/app2")
-    fun app2():String
+    @PostMapping("/app2/{name}")
+    fun app2(@PathVariable("name") name: String): String
 }
 
 @RestController
 @Import(FeignClientsConfiguration::class)
 class App2Controller @Autowired constructor (val app3Client : App3 ):App2 {
 
-    @PostMapping("/app2")
-    override fun app2() = buildString {
-        val app3response = app3Client.app3()
-        appendLine("Greeting from app2, app3 $app3response")
+    override fun app2(name: String): String = buildString {
+        val app3response = app3Client.app3(42)
+        appendLine("Greeting from app2 $name, app3 $app3response")
     }
 }
 
