@@ -9,13 +9,13 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.runtime.Micronaut.build
 import javax.inject.Inject
 
-@Controller("/client1")
+@Controller("/")
 
 class Application1Controller {
     @Client
     @Inject
     lateinit  var client: Application1OperationClient
-    @Get
+    @Get("/app-1")
     @Produces(MediaType.TEXT_PLAIN)
     fun index() = buildString {
         val application2 = client.application2()

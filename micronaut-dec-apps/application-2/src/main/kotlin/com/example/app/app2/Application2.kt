@@ -3,6 +3,7 @@ package com.example.app.app2
 import com.example.app.common.Application1OperationClient
 import com.example.app.common.Application2OperationClient
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Post
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.runtime.Micronaut.build
 import javax.inject.Inject
@@ -13,6 +14,7 @@ class Application2Controller: Application1OperationClient {
     @Inject
     lateinit var client: Application2OperationClient
 
+    @Post("/app-2")
     override fun application2() = buildString {
         val application3 = client.application3()
         appendLine("app2, $application3")
