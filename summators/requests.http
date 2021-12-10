@@ -1,0 +1,26 @@
+GET http://localhost:8080/inc/2
+
+
+### rest client
+GET http://localhost:8080/inc2loc/42
+
+
+###
+GET http://localhost:8081/dub/3
+
+
+###
+GET http://localhost:8081/dub2loc/42
+
+### Feign
+GET http://localhost:8081/dubInc/42
+
+
+###
+GET http://localhost:8081/incDub/24
+
+###
+GET http://localhost:8082/dub42cat/5
+
+###
+GET http://localhost:8082/cat42inc/3
