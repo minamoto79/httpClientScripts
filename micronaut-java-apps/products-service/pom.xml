@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>great-megalodon</artifactId>
+    <artifactId>products-service</artifactId>
     <version>0.1</version>
     <packaging>${packaging}</packaging>
 
@@ -19,7 +19,7 @@
         <release.version>11</release.version>
         <micronaut.version>3.1.0</micronaut.version>
         <exec.mainClass>com.example.Application</exec.mainClass>
-        <micronaut.runtime>tomcat</micronaut.runtime>
+        <micronaut.runtime>netty</micronaut.runtime>
     </properties>
 
     <repositories>
@@ -62,12 +62,12 @@
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>micronaut-runtime</artifactId>
+            <artifactId>micronaut-http-server-netty</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.micronaut.servlet</groupId>
-            <artifactId>micronaut-http-server-tomcat</artifactId>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -105,7 +105,7 @@
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <arg>-Amicronaut.processing.group=com.example</arg>
-                        <arg>-Amicronaut.processing.module=great-megalodon</arg>
+                        <arg>-Amicronaut.processing.module=products-service</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
