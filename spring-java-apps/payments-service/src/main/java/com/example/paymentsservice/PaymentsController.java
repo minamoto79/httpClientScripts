@@ -4,10 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/payments")
@@ -17,16 +14,12 @@ public class PaymentsController {
             .build();
 
     @GetMapping
-    public List<Payment> getAll() {
-        List<Product> response = webClient.get()
+    public Flux<Payment> getAll() {
+        Flux<Product> response = webClient.get()
                 .uri("/products")
-                .exchangeToFlux(clientResponse -> clientResponse.bodyToFlux(Product.class))
-                .collectList()
-                .block();
+                .exchangeToFlux(clientResponse -> clientResponse.bodyToFlux(Product.class));
 
-        return Objects.requireNonNull(response).stream()
-                .map(p -> new Payment(p.getId(), "10$"))
-                .collect(Collectors.toList());
+        return response.map(p -> new Payment(p.getId(), "10$"));
     }
 }
 
