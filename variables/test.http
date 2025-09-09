@@ -1,0 +1,8 @@
+###
+< {%
+const clientsEnv = request.environment.get("clients.id")
+const clients = client.variables.environment.get("password")
+console.log(`clients: ${clients}, ${clientsEnv}`)
+    %}
+
+GET examples.http-client.intellij.net

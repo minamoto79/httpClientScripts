@@ -1,0 +1,25 @@
+@rsaSsaPublicKeySha384 = MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmNiDQ1JNNiKQcK9vyPaqyWqwVUxQ/3su7beYpvRNM6AKOd7B2sVMTTXqU7Bt5SG6AXW81voh032XI148byoLyqwYQLIxGVpZ0dXH/xjONAV3ai59ScNAOzry9P4DLGYbXyplXhjra++QQbDy4/k4BraWQtfRPu6HQvbw1NO8UaYyM2dVr8OUPxtIDEmmc/S7vo8SPbKo1R8G0jf9G5StNgXcffEwoDd5nXRJZRs7CAh5Phrh3liQArSSugpTv584ClUhdHsuHd3pkYCsFs6D0Xk3Ji/S+kUlMPWh9C+BrBJujQZVs4dfY0zBLeNs125lJltVZr8th/uOGaMLluwRrwIDAQAB
+@rsaSsaSha384Signature = NI5JOKGy02NpTg3NS11ZBxczAQhjywrGW7n0f60AAFWrMH1Pii04KGHMW+DVTPNSuONTbLpASwm2vy9Xj+cgR2KgsCTPvEaEo43lHZxb89cLby25TIVPr28YV654fpJI4A41PfkUS7VOPiuglhJbSGCdETJ+n4RLSyN/9Ix8zfFpGM0kmORKgkry8wqm9oWOmR8+exnTXA/A2NK0BVG95UUI3TfKQIVF4u5Byiuokz3adqgGom/N/Okkwr0K5Np8wyzCZrLPutQMexaOTjzxxcrxLc5F6uQLnr1FGa+AWpBguy+N3p0rYBCTI3z/7bnlJuLOWjWNn8sBiei0kLY6Ng==
+
+< {%
+    const text = "Servus, RSASSA-PKCS1-v1_5!";
+    const publicKey = crypto.subtle.importKey('spki', Uint8Array.from(atob(`${client.variables.file.get("rsaSsaPublicKeySha384")}`), c => c.charCodeAt(0)), {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: {name: 'SHA-384' }
+    }, true, ['verify']);
+
+    // Step 3: Verify the signature using the public key
+    const isValid = crypto.subtle.verify(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            hash: "SHA-384"
+        },
+        publicKey,
+        Uint8Array.from(atob(`${client.variables.file.get("rsaSsaSha384Signature")}`), c => c.charCodeAt(0)),
+        Uint8Array.from(text, c => c.charCodeAt(0))
+    );
+
+    console.log("Signature valid?", isValid);
+%}
+
+GET examples.http-client.intellij.net/anything

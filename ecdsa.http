@@ -1,0 +1,110 @@
+###
+< {%
+
+    const algorithm = {
+        name: 'ECDSA',
+        namedCurve: 'P-521'
+    };
+
+    const {privateKey, publicKey} = crypto.subtle.generateKey(
+        algorithm,
+        true,
+        ['sign', 'verify']
+    );
+
+    let otherClaim = 'Servus, HTTP Client Pre Script!!!';
+    const data = Uint8Array.from(otherClaim, c => c.charCodeAt(0));
+
+
+    const ecdsaParams = {name: 'ECDSA', hash: 'SHA-512'};
+
+    const ecdsaSignature = crypto.subtle.sign(ecdsaParams, privateKey, data);
+    console.log(`ECDSA signature length: ${ecdsaSignature.byteLength}`);
+
+    const ok = crypto.subtle.verify(ecdsaParams, publicKey, ecdsaSignature, data);
+    console.log(`verify ${otherClaim}: ${ok}`);
+
+    // JWT with ES512
+    const ecdsaJwt = jwt.sign(
+        {other_claim: otherClaim,
+        aud: 'minamoto'},
+        privateKey,
+        {algorithm: 'ES512'}
+    );
+
+    console.log(`ECDSA JWT: ${ecdsaJwt}`);
+    console.log(`ECDSA verification: ${jwt.verify(ecdsaJwt, publicKey, {algorithm: 'ES512'})}`);
+
+
+    const spki = crypto.subtle.exportKey('spki', publicKey);
+    const publicKeyStr = btoa(String.fromCharCode(...new Uint8Array(spki)));
+    console.log(`public key:
+-----BEGIN PUBLIC KEY-----
+${publicKeyStr.match(/.{1,64}/g).join('\n')}
+-----END PUBLIC KEY-----`);
+
+%}
+GET examples.http-client.intellij.net/anything
+
+###
+< {%
+        const base64publicKey = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEn8E8vCgnmyDISke4RQVt0uwhE0AFL61crfJ7gmKkLgISv+eV5zAB1GBVQ/mj/4bZO8yJnFCrNGILHN59aCEEfA=='
+        const base64privateKey = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgXMpTO9h9dsmz9f9XfpvdUbU8PGt7ZMiN95Irv0XAgQyhRANCAASfwTy8KCebIMhKR7hFBW3S7CETQAUvrVyt8nuCYqQuAhK/55XnMAHUYFVD+aP/htk7zImcUKs0Ygsc3n1oIQR8'
+        const privateKey = crypto.subtle.importKey('pkcs8', Uint8Array.from(atob(base64privateKey), c => c.codePointAt(0)), {name: "ECDSA", namedCurve: "P-256"}, true, ["sign"])
+        const msg = "Servus aus HTTP Client !!!"
+        const signature = crypto.subtle.sign({name: "ECDSA", hash: "SHA-256"}, privateKey, Uint8Array.from(msg, c => c.charCodeAt(0)))
+
+        const publicKey = crypto.subtle.importKey('spki', Uint8Array.from(atob(base64publicKey), c => c.codePointAt(0)), {name: "ECDSA", namedCurve: "P-256"}, true, ["verify"])
+        const verificationResult = crypto.subtle.verify({name: "ECDSA", hash: "SHA-256"}, publicKey, signature, Uint8Array.from(msg, c => c.charCodeAt(0)))
+        console.log(`verificationResult: ${verificationResult}`)
+
+     %}
+
+GET examples.http-client.intellij.net
+###
+< {%
+    const text = "Hello, RSASSA-PKCS1-v1_5!";
+    const data = Window.btoa(text);
+
+    // Step 1: Generate RSA key pair
+    const {privateKey, publicKey} = crypto.subtle.generateKey(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            modulusLength: 2048,       // Key size in bits
+            publicExponent: new Uint8Array([1, 0, 1]), // 0x10001
+            hash: "SHA-512", // Use SHA-256 for hashing
+        },
+        true,   // extractable
+        ["sign", "verify"]
+    );
+    console.log(`privateKey: ${JSON.stringify(privateKey)}`)
+%}
+
+GET examples.http-client.intellij.net
+
+###
+@rsaSsaPublicKeySha384 = MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmNiDQ1JNNiKQcK9vyPaqyWqwVUxQ/3su7beYpvRNM6AKOd7B2sVMTTXqU7Bt5SG6AXW81voh032XI148byoLyqwYQLIxGVpZ0dXH/xjONAV3ai59ScNAOzry9P4DLGYbXyplXhjra++QQbDy4/k4BraWQtfRPu6HQvbw1NO8UaYyM2dVr8OUPxtIDEmmc/S7vo8SPbKo1R8G0jf9G5StNgXcffEwoDd5nXRJZRs7CAh5Phrh3liQArSSugpTv584ClUhdHsuHd3pkYCsFs6D0Xk3Ji/S+kUlMPWh9C+BrBJujQZVs4dfY0zBLeNs125lJltVZr8th/uOGaMLluwRrwIDAQAB
+@rsaSsaSha384Signature = NI5JOKGy02NpTg3NS11ZBxczAQhjywrGW7n0f60AAFWrMH1Pii04KGHMW+DVTPNSuONTbLpASwm2vy9Xj+cgR2KgsCTPvEaEo43lHZxb89cLby25TIVPr28YV654fpJI4A41PfkUS7VOPiuglhJbSGCdETJ+n4RLSyN/9Ix8zfFpGM0kmORKgkry8wqm9oWOmR8+exnTXA/A2NK0BVG95UUI3TfKQIVF4u5Byiuokz3adqgGom/N/Okkwr0K5Np8wyzCZrLPutQMexaOTjzxxcrxLc5F6uQLnr1FGa+AWpBguy+N3p0rYBCTI3z/7bnlJuLOWjWNn8sBiei0kLY6Ng==
+
+< {%
+    const text = "Servus, RSASSA-PKCS1-v1_5!";
+    const publicKey = crypto.subtle.importKey('spki', Uint8Array.from(atob(`${client.variables.file.get("rsaSsaPublicKeySha384")}`), c => c.charCodeAt(0)), {
+             name: 'RSASSA-PKCS1-v1_5',
+             hash: {name: 'SHA-384' }
+           }, true, ['verify']);
+
+           // Step 3: Verify the signature using the public key
+           const isValid = crypto.subtle.verify(
+             {
+               name: "RSASSA-PKCS1-v1_5",
+               hash: "SHA-384"
+             },
+             publicKey,
+             Uint8Array.from(atob(`${client.variables.file.get("rsaSsaSha384Signature")}`), c => c.charCodeAt(0)),
+             Uint8Array.from(text, c => c.charCodeAt(0))
+           );
+
+           console.log("Signature valid?", isValid);
+%}
+
+GET examples.http-client.intellij.net/anything

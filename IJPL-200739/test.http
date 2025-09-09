@@ -1,0 +1,6 @@
+###
+< {%
+    import 'non-existing'
+ %}
+
+GET examples.http-client.intellij.net

@@ -1,0 +1,277 @@
+< {%
+    function test(name, fn) {
+        try {
+            fn();
+            console.log('✅', name);
+        } catch (e) {
+            console.log('❌', name, '\n  ', e && e.message || e);
+        }
+    }
+
+    const atob = Window.atob;
+    const btoa = Window.btoa;
+
+
+    function expectThrow(fn, msg) {
+        let threw = false;
+        try {
+            fn();
+        } catch (_) {
+            threw = true;
+        }
+        if (!threw) throw new Error(msg || 'Expected throw');
+    }
+
+    // --- Helpers: binary-string <-> bytes (Latin‑1) ---
+    function bytesToBinStr(b) {
+        let s = '', c = 0x8000;
+        for (let i = 0; i < b.length; i += c) s += String.fromCharCode.apply(null, b.subarray(i, Math.min(i + c, b.length)));
+        return s;
+    }
+
+    function binStrToBytes(s) {
+        const o = new Uint8Array(s.length);
+        for (let i = 0; i < s.length; i++) o[i] = s.charCodeAt(i) & 0xff;
+        return o;
+    }
+
+    const btoaBytes = b => btoa(bytesToBinStr(b));
+    const atobToBytes = b64 => binStrToBytes(atob(b64));
+    const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+    // --- Deterministic vectors (browser-compatible) ---
+    test('btoa: ASCII "Hello" → SGVsbG8=', () => {
+        const b64 = btoa('Hello');
+        if (b64 !== 'SGVsbG8=') throw new Error(b64);
+    });
+    test('atob: SGVsbG8= → "Hello"', () => {
+        const s = atob('SGVsbG8=');
+        if (s !== 'Hello') throw new Error(s);
+    });
+    test('btoa: binary bytes [DE ED BE EF] → 3u2+7w==', () => {
+        const b64 = btoaBytes(Uint8Array.from([0xDE, 0xED, 0xBE, 0xEF]));
+        if (b64 !== '3u2+7w==') throw new Error(b64);
+    });
+    test('atob: 3u2+7w== → same bytes', () => {
+        const out = atobToBytes('3u2+7w==');
+        if (!eq(out, Uint8Array.from([0xDE, 0xED, 0xBE, 0xEF]))) throw new Error('bytes mismatch');
+    });
+    test('btoa: accepts 0x00 (NUL) and 0xFF (ÿ)', () => {
+        const s = String.fromCharCode(0x00, 0xFF);
+        const b64 = btoa(s);
+        if (b64 !== 'AP8=') throw new Error(b64);
+        const back = atob(b64);
+        if (back.charCodeAt(0) !== 0x00 || back.charCodeAt(1) !== 0xFF) throw new Error('roundtrip mismatch');
+    });
+
+    // --- Padding rules ---
+    test('padding: len%3==0 → no "="', () => {
+        const b64 = btoa('Man'); // 3 bytes
+        if (/=/.test(b64)) throw new Error('unexpected padding');
+    });
+    test('padding: len%3==1 → "=="', () => {
+        const b64 = btoa('M');   // 1 byte
+        if (!/==$/.test(b64)) throw new Error('expected "=="');
+    });
+    test('padding: len%3==2 → "="', () => {
+        const b64 = btoa('Ma');  // 2 bytes
+        if (!/=$/.test(b64)) throw new Error('expected "="');
+    });
+
+    // --- Whitespace handling (WHATWG: ASCII whitespace ignored by atob) ---
+    test('atob ignores ASCII whitespace', () => {
+        const s = atob('SG V s b G8 ='.replace(/ /g, ''));
+        if (s !== 'Hello') throw new Error('whitespace not ignored');
+    });
+
+    // --- Invalid alphabet / length errors ---
+    test('atob: rejects URL-safe chars "-" and "_" (should throw)', () => {
+        expectThrow(() => atob('SGVsbG8-'), 'did not throw on "-"');
+        expectThrow(() => atob('SGVsbG8_'), 'did not throw on "_"');
+    });
+    test('atob: rejects bad length (mod 4 == 1)', () => {
+        expectThrow(() => atob('A'), 'did not throw on bad length');
+    });
+    test('atob: rejects non-alphabet chars', () => {
+        expectThrow(() => atob('*GVsbG8='), 'did not throw on "*"');
+    });
+
+    // --- btoa input domain: must be Latin-1 (<= 0xFF) ---
+    test('btoa: throws on codepoint > 0xFF (e.g., "Ā")', () => {
+        expectThrow(() => btoa('Ā'), 'did not throw on >0xFF');
+    });
+    test('btoa: "ÿ" (0xFF) is OK', () => {
+        const b64 = btoa('ÿ');
+        if (b64 !== '/w==') throw new Error(b64);
+    });
+
+    // --- Roundtrip fuzz (deterministic) ---
+    function prng(seed) {
+        let s = seed >>> 0;
+        return () => ((s = Math.imul(s, 1664525) + 1013904223) >>> 0);
+    }
+
+    const rnd = prng(0xC0FFEE);
+    test('fuzz: 500 random byte arrays roundtrip', () => {
+        for (let i = 0; i < 500; i++) {
+            const len = rnd() % 1024, a = new Uint8Array(len);
+            for (let j = 0; j < len; j++) a[j] = rnd() & 0xFF;
+            const b64 = btoaBytes(a);
+            const back = atobToBytes(b64);
+            if (!eq(a, back)) throw new Error(`mismatch at case ${i}, len=${len}`);
+        }
+    });
+
+    function binEq(a, b) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (a.charCodeAt(i) !== b.charCodeAt(i)) return false;
+        return true;
+    }
+
+    test('ASCII enc/dec', () => {
+        if (btoa('Hello') !== 'SGVsbG8=') throw new Error('btoa');
+        if (atob('SGVsbG8=') !== 'Hello') throw new Error('atob');
+    });
+
+    test('Binary roundtrip (00 FF)', () => {
+        const s = String.fromCharCode(0x00, 0xFF);
+        const b64 = btoa(s);
+        if (b64 !== 'AP8=') throw new Error('btoa bytes');
+        const back = atob(b64);
+        if (!binEq(back, s)) throw new Error('atob bytes');
+        if (back.charCodeAt(0) !== 0x00 || back.charCodeAt(1) !== 0xFF) throw new Error('hi-bytes lost');
+    });
+
+    test('Whitespace ignored by atob', () => {
+        const spaced = 'S G V s b G 8 ='.replace(/ /g, '');
+        if (atob(spaced) !== 'Hello') throw new Error('whitespace');
+    });
+
+    test('Missing padding accepted (except len%4==1)', () => {
+        if (atob('SGVsbG8') !== 'Hello') throw new Error('no pad');
+        if (atob('TWE') !== 'Ma') throw new Error('1 pad');
+        expectThrow(() => atob('A')); // bad length
+    });
+
+    test('URL-safe: atobUrl decodes base64url', () => {
+        if (typeof atobUrl !== 'function') throw new Error('atobUrl missing');
+        const url = '3u2-7w'; // "3u2+7w==" -> "-" for "+"
+        if (atobUrl(url) !== atob('3u2+7w==')) throw new Error('atobUrl mismatch');
+    });
+
+    test('Standard atob rejects "-" and "_"', () => {
+        expectThrow(() => atob('SGVsbG8-'));
+        expectThrow(() => atob('SGVsbG8_'));
+    });
+
+    test('btoa throws on >0xFF', () => {
+        expectThrow(() => btoa('Ā'));
+    });
+
+    // Helpers for comparing binary strings quickly
+    function bytesToStr(u) {
+        let s = '', chunk = 0x8000;
+        for (let i = 0; i < u.length; i += chunk) s += String.fromCharCode.apply(null, u.subarray(i, Math.min(i + chunk, u.length)));
+        return s;
+    }
+
+    // --- Presence ---
+    test('btoa/btoaUrl present', () => {
+        if (typeof btoa !== 'function') throw new Error('btoa missing');
+        if (typeof btoaUrl !== 'function') throw new Error('btoaUrl missing');
+    });
+
+    // --- Basic vectors (strings) ---
+    test('btoa("Hello") → SGVsbG8=', () => {
+        if (btoa('Hello') !== 'SGVsbG8=') throw new Error('mismatch');
+    });
+    test('btoaUrl("Hello") → SGVsbG8 (no padding)', () => {
+        if (btoaUrl('Hello') !== 'SGVsbG8') throw new Error('mismatch');
+    });
+
+    // --- Binary input via Uint8Array (ProxyArray) ---
+    test('btoa(Uint8Array [DE ED BE EF]) → 3u2+7w==', () => {
+        const u8 = new Uint8Array([0xDE, 0xED, 0xBE, 0xEF]);
+        const out = btoa(u8);
+        if (out !== '3u2+7w==') throw new Error(out);
+    });
+    test('btoaUrl(Uint8Array [DE ED BE EF]) → 3u2-7w (no padding)', () => {
+        const u8 = new Uint8Array([0xDE, 0xED, 0xBE, 0xEF]);
+        const out = btoaUrl(u8);
+        if (out !== '3u2-7w') throw new Error(out);
+    });
+
+    // --- High-byte handling (Latin-1 domain) ---
+    test('btoa allows 0x00 and 0xFF', () => {
+        const s = String.fromCharCode(0x00, 0xFF);
+        if (btoa(s) !== 'AP8=') throw new Error('mismatch');
+    });
+    test('btoa throws on >0xFF (e.g., "Ā")', () => {
+        expectThrow(() => btoa('Ā'));
+    });
+    test('btoa accepts 0xFF literal "ÿ"', () => {
+        if (btoa('ÿ') !== '/w==') throw new Error('mismatch');
+    });
+
+    // --- Padding rules (length mod 3) ---
+    test('btoa: len%3==0 → no "="', () => {
+        if (/=/.test(btoa('Man'))) throw new Error('unexpected "="');
+    });
+    test('btoa: len%3==1 → "=="', () => {
+        if (!/==$/.test(btoa('M'))) throw new Error('expected "=="');
+    });
+    test('btoa: len%3==2 → "="', () => {
+        if (!/=$/.test(btoa('Ma'))) throw new Error('expected "="');
+    });
+
+    // --- URL-safe specifics ---
+    test('btoaUrl omits "=" padding always', () => {
+        const cases = ['M', 'Ma', 'Man', 'Hello', bytesToStr(new Uint8Array([0, 255]))];
+        for (const c of cases) {
+            if (/=/.test(btoaUrl(c))) throw new Error('found padding');
+        }
+    });
+    test('btoaUrl replaces +/ with -/_', () => {
+        // Choose inputs that produce '+' and '/' in standard base64
+        const uPlus = new Uint8Array([0xFB, 0xEF]);   // '++8=' in std -> '++8' -> url becomes '++8' (no slash here)
+        const uSlash = new Uint8Array([0xFF, 0xFF]);   // '//8=' in std -> url is '__8'
+        if (btoaUrl(uSlash) !== '__8') throw new Error('slash mapping failed');
+    });
+
+    // --- Numeric coercion/masking for typed arrays ---
+    test('btoa(Uint8Array) coerces & masks bytes (0..255)', () => {
+        const u = new Uint8Array([256, -1, 300]); // effectively [0,255,44]
+        const expect = btoa(new Uint8Array([0, 255, 44]));
+        const got = btoa(u);
+        if (got !== expect) throw new Error(`coercion mismatch: ${got} vs ${expect}`);
+    });
+
+    // --- Only first argument is used (browser semantics) ---
+    test('btoa uses only the first argument', () => {
+        const s1 = btoa('A', 'B', 'C');
+        const s2 = btoa('A');
+        if (s1 !== s2) throw new Error('extra args affected result');
+    });
+    test('btoaUrl uses only the first argument', () => {
+        const s1 = btoaUrl('A', 'B', 'C');
+        const s2 = btoaUrl('A');
+        if (s1 !== s2) throw new Error('extra args affected result');
+    });
+%}
+GET examples.http-client.intellij.net/anything
+Accept: application/json
+
+
+<> 2025-08-12T051856.200.json
+<> 2025-08-12T051750.200.json
+
+###
+< {%
+    test('btoa(Uint8Array [DE ED BE EF]) → 3u2+7w==', () => {
+        const u8 = new Uint8Array([0xDE, 0xED, 0xBE, 0xEF]);
+        const out = btoa(u8);
+        if (out !== '3u2+7w==') throw new Error(out);
+    });
+%}
+
+GET examples.http-client.intellij.net/anything

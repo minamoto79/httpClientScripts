@@ -1,0 +1,35 @@
+< {%
+
+    const algorithm = {
+        name: 'ECDSA',
+        namedCurve: 'P-521',
+        hash: 'SHA-512'
+    };
+    const pair = crypto.subtle.generateKey(
+        algorithm,
+        true,
+        ['sign', 'verify']
+    );
+
+    let otherClaim = 'Servus, HTTP Client Pre Script!!!';
+    const data = Uint8Array.from(otherClaim, c => c.charCodeAt(0));
+
+    // JWT with ES512
+    const ecdsaJwt = jwt.sign(
+        {other_claim: otherClaim},
+        pair.privateKey,
+        {algorithm: 'ES512'}
+    );
+
+    console.log(`ECDSA JWT: ${ecdsaJwt}`);
+    console.log(`ECDSA verification: ${jwt.verify(ecdsaJwt, pair.publicKey, {algorithm: 'ES512'})}`);
+
+
+    const spki = crypto.subtle.exportKey('spki', pair.publicKey);
+    const publicKey = btoa(String.fromCharCode(...new Uint8Array(spki)));
+    console.log(`public key:
+-----BEGIN PUBLIC KEY-----
+${publicKey.match(/.{1,64}/g).join('\n')}
+-----END PUBLIC KEY-----`);
+%}
+GET examples.http-client.intellij.net/anything

@@ -1,0 +1,11 @@
+### Get OAuth token
+GET http://google.com
+Content-Type: application/x-www-form-urlencoded
+
+> {%
+    // setting client.global.headers in response handler script doesn't work.
+    client.global.headers.set("XXX", "YYYY");
+%}
+
+### Request will fail because `client.global.headers` is empty
+GET http://jetbrains.com

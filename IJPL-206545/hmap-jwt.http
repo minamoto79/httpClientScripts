@@ -1,0 +1,22 @@
+< {%
+    const secret = 'super-secret-key';
+
+    const payload = {
+        sub: 'minamoto',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60,
+        iat: Math.floor(Date.now() / 1000),  // issued at
+    };
+
+
+    const token = jwt.sign(payload, secret, { algorithm: 'HS256' });
+    console.log('JWT:', token);
+
+
+        const decoded = jwt.verify(token, secret, { algorithm: 'HS256' });
+        console.log('Verified payload:', decoded);
+%}
+
+GET examples.http-client.intellij.net
+
+
+//exp: Math.floor(Date.now() / 1000) + 60 * 60  // 1 hour expiry

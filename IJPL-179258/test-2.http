@@ -1,0 +1,1128 @@
+### Step 1: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 1,
+  "userId": 1001,
+  "location": {
+    "lat": 46.0000001,
+    "lon": 14.0000001
+  },
+  "materialId": 2900000001
+}
+
+> {%
+  client.test("Step 1 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId1", data.json.userId);
+  client.global.set("materialId1", data.json.materialId);
+  client.global.set("lat1", data.json.location.lat);
+  client.global.set("lon1", data.json.location.lon);
+
+  client.test("Test 1.01", () => {
+    client.assert(true, "Dummy test 1.01 should pass");
+  });
+  client.test("Test 1.02", () => {
+    client.assert(true, "Dummy test 1.02 should pass");
+  });
+  client.test("Test 1.03", () => {
+    client.assert(true, "Dummy test 1.03 should pass");
+  });
+  client.test("Test 1.04", () => {
+    client.assert(true, "Dummy test 1.04 should pass");
+  });
+  client.test("Test 1.05", () => {
+    client.assert(true, "Dummy test 1.05 should pass");
+  });
+  client.test("Test 1.06", () => {
+    client.assert(true, "Dummy test 1.06 should pass");
+  });
+  client.test("Test 1.07", () => {
+    client.assert(true, "Dummy test 1.07 should pass");
+  });
+  client.test("Test 1.08", () => {
+    client.assert(true, "Dummy test 1.08 should pass");
+  });
+  client.test("Test 1.09", () => {
+    client.assert(true, "Dummy test 1.09 should pass");
+  });
+  client.test("Test 1.10", () => {
+    client.assert(true, "Dummy test 1.10 should pass");
+  });
+%}
+
+### Step 1: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 1,
+  "userId": "{{userId1}}",
+  "materialId": "{{materialId1}}",
+  "location": {
+    "lat": "{{lat1}}",
+    "lon": "{{lon1}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 1 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId1"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId1"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 1.01", () => {
+    client.assert(true, "Dummy test 1.01 should pass");
+  });
+  client.test("Test 1.02", () => {
+    client.assert(true, "Dummy test 1.02 should pass");
+  });
+  client.test("Test 1.03", () => {
+    client.assert(true, "Dummy test 1.03 should pass");
+  });
+  client.test("Test 1.04", () => {
+    client.assert(true, "Dummy test 1.04 should pass");
+  });
+  client.test("Test 1.05", () => {
+    client.assert(true, "Dummy test 1.05 should pass");
+  });
+  client.test("Test 1.06", () => {
+    client.assert(true, "Dummy test 1.06 should pass");
+  });
+  client.test("Test 1.07", () => {
+    client.assert(true, "Dummy test 1.07 should pass");
+  });
+  client.test("Test 1.08", () => {
+    client.assert(true, "Dummy test 1.08 should pass");
+  });
+  client.test("Test 1.09", () => {
+    client.assert(true, "Dummy test 1.09 should pass");
+  });
+  client.test("Test 1.10", () => {
+    client.assert(true, "Dummy test 1.10 should pass");
+  });
+%}
+
+
+### Step 2: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 2,
+  "userId": 1002,
+  "location": {
+    "lat": 46.0000002,
+    "lon": 14.0000002
+  },
+  "materialId": 2900000002
+}
+
+> {%
+  client.test("Step 2 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId2", data.json.userId);
+  client.global.set("materialId2", data.json.materialId);
+  client.global.set("lat2", data.json.location.lat);
+  client.global.set("lon2", data.json.location.lon);
+
+  client.test("Test 2.01", () => {
+    client.assert(true, "Dummy test 2.01 should pass");
+  });
+  client.test("Test 2.02", () => {
+    client.assert(true, "Dummy test 2.02 should pass");
+  });
+  client.test("Test 2.03", () => {
+    client.assert(true, "Dummy test 2.03 should pass");
+  });
+  client.test("Test 2.04", () => {
+    client.assert(true, "Dummy test 2.04 should pass");
+  });
+  client.test("Test 2.05", () => {
+    client.assert(true, "Dummy test 2.05 should pass");
+  });
+  client.test("Test 2.06", () => {
+    client.assert(true, "Dummy test 2.06 should pass");
+  });
+  client.test("Test 2.07", () => {
+    client.assert(true, "Dummy test 2.07 should pass");
+  });
+  client.test("Test 2.08", () => {
+    client.assert(true, "Dummy test 2.08 should pass");
+  });
+  client.test("Test 2.09", () => {
+    client.assert(true, "Dummy test 2.09 should pass");
+  });
+  client.test("Test 2.10", () => {
+    client.assert(true, "Dummy test 2.10 should pass");
+  });
+%}
+
+### Step 2: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 2,
+  "userId": "{{userId2}}",
+  "materialId": "{{materialId2}}",
+  "location": {
+    "lat": "{{lat2}}",
+    "lon": "{{lon2}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 2 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId2"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId2"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 2.01", () => {
+    client.assert(true, "Dummy test 2.01 should pass");
+  });
+  client.test("Test 2.02", () => {
+    client.assert(true, "Dummy test 2.02 should pass");
+  });
+  client.test("Test 2.03", () => {
+    client.assert(true, "Dummy test 2.03 should pass");
+  });
+  client.test("Test 2.04", () => {
+    client.assert(true, "Dummy test 2.04 should pass");
+  });
+  client.test("Test 2.05", () => {
+    client.assert(true, "Dummy test 2.05 should pass");
+  });
+  client.test("Test 2.06", () => {
+    client.assert(true, "Dummy test 2.06 should pass");
+  });
+  client.test("Test 2.07", () => {
+    client.assert(true, "Dummy test 2.07 should pass");
+  });
+  client.test("Test 2.08", () => {
+    client.assert(true, "Dummy test 2.08 should pass");
+  });
+  client.test("Test 2.09", () => {
+    client.assert(true, "Dummy test 2.09 should pass");
+  });
+  client.test("Test 2.10", () => {
+    client.assert(true, "Dummy test 2.10 should pass");
+  });
+%}
+
+
+### Step 3: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 3,
+  "userId": 1003,
+  "location": {
+    "lat": 46.0000003,
+    "lon": 14.0000003
+  },
+  "materialId": 2900000003
+}
+
+> {%
+  client.test("Step 3 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId3", data.json.userId);
+  client.global.set("materialId3", data.json.materialId);
+  client.global.set("lat3", data.json.location.lat);
+  client.global.set("lon3", data.json.location.lon);
+
+  client.test("Test 3.01", () => {
+    client.assert(true, "Dummy test 3.01 should pass");
+  });
+  client.test("Test 3.02", () => {
+    client.assert(true, "Dummy test 3.02 should pass");
+  });
+  client.test("Test 3.03", () => {
+    client.assert(true, "Dummy test 3.03 should pass");
+  });
+  client.test("Test 3.04", () => {
+    client.assert(true, "Dummy test 3.04 should pass");
+  });
+  client.test("Test 3.05", () => {
+    client.assert(true, "Dummy test 3.05 should pass");
+  });
+  client.test("Test 3.06", () => {
+    client.assert(true, "Dummy test 3.06 should pass");
+  });
+  client.test("Test 3.07", () => {
+    client.assert(true, "Dummy test 3.07 should pass");
+  });
+  client.test("Test 3.08", () => {
+    client.assert(true, "Dummy test 3.08 should pass");
+  });
+  client.test("Test 3.09", () => {
+    client.assert(true, "Dummy test 3.09 should pass");
+  });
+  client.test("Test 3.10", () => {
+    client.assert(true, "Dummy test 3.10 should pass");
+  });
+%}
+
+### Step 3: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 3,
+  "userId": "{{userId3}}",
+  "materialId": "{{materialId3}}",
+  "location": {
+    "lat": "{{lat3}}",
+    "lon": "{{lon3}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 3 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId3"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId3"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 3.01", () => {
+    client.assert(true, "Dummy test 3.01 should pass");
+  });
+  client.test("Test 3.02", () => {
+    client.assert(true, "Dummy test 3.02 should pass");
+  });
+  client.test("Test 3.03", () => {
+    client.assert(true, "Dummy test 3.03 should pass");
+  });
+  client.test("Test 3.04", () => {
+    client.assert(true, "Dummy test 3.04 should pass");
+  });
+  client.test("Test 3.05", () => {
+    client.assert(true, "Dummy test 3.05 should pass");
+  });
+  client.test("Test 3.06", () => {
+    client.assert(true, "Dummy test 3.06 should pass");
+  });
+  client.test("Test 3.07", () => {
+    client.assert(true, "Dummy test 3.07 should pass");
+  });
+  client.test("Test 3.08", () => {
+    client.assert(true, "Dummy test 3.08 should pass");
+  });
+  client.test("Test 3.09", () => {
+    client.assert(true, "Dummy test 3.09 should pass");
+  });
+  client.test("Test 3.10", () => {
+    client.assert(true, "Dummy test 3.10 should pass");
+  });
+%}
+
+
+### Step 4: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 4,
+  "userId": 1004,
+  "location": {
+    "lat": 46.0000004,
+    "lon": 14.0000004
+  },
+  "materialId": 2900000004
+}
+
+> {%
+  client.test("Step 4 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId4", data.json.userId);
+  client.global.set("materialId4", data.json.materialId);
+  client.global.set("lat4", data.json.location.lat);
+  client.global.set("lon4", data.json.location.lon);
+
+  client.test("Test 4.01", () => {
+    client.assert(true, "Dummy test 4.01 should pass");
+  });
+  client.test("Test 4.02", () => {
+    client.assert(true, "Dummy test 4.02 should pass");
+  });
+  client.test("Test 4.03", () => {
+    client.assert(true, "Dummy test 4.03 should pass");
+  });
+  client.test("Test 4.04", () => {
+    client.assert(true, "Dummy test 4.04 should pass");
+  });
+  client.test("Test 4.05", () => {
+    client.assert(true, "Dummy test 4.05 should pass");
+  });
+  client.test("Test 4.06", () => {
+    client.assert(true, "Dummy test 4.06 should pass");
+  });
+  client.test("Test 4.07", () => {
+    client.assert(true, "Dummy test 4.07 should pass");
+  });
+  client.test("Test 4.08", () => {
+    client.assert(true, "Dummy test 4.08 should pass");
+  });
+  client.test("Test 4.09", () => {
+    client.assert(true, "Dummy test 4.09 should pass");
+  });
+  client.test("Test 4.10", () => {
+    client.assert(true, "Dummy test 4.10 should pass");
+  });
+%}
+
+### Step 4: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 4,
+  "userId": "{{userId4}}",
+  "materialId": "{{materialId4}}",
+  "location": {
+    "lat": "{{lat4}}",
+    "lon": "{{lon4}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 4 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId4"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId4"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 4.01", () => {
+    client.assert(true, "Dummy test 4.01 should pass");
+  });
+  client.test("Test 4.02", () => {
+    client.assert(true, "Dummy test 4.02 should pass");
+  });
+  client.test("Test 4.03", () => {
+    client.assert(true, "Dummy test 4.03 should pass");
+  });
+  client.test("Test 4.04", () => {
+    client.assert(true, "Dummy test 4.04 should pass");
+  });
+  client.test("Test 4.05", () => {
+    client.assert(true, "Dummy test 4.05 should pass");
+  });
+  client.test("Test 4.06", () => {
+    client.assert(true, "Dummy test 4.06 should pass");
+  });
+  client.test("Test 4.07", () => {
+    client.assert(true, "Dummy test 4.07 should pass");
+  });
+  client.test("Test 4.08", () => {
+    client.assert(true, "Dummy test 4.08 should pass");
+  });
+  client.test("Test 4.09", () => {
+    client.assert(true, "Dummy test 4.09 should pass");
+  });
+  client.test("Test 4.10", () => {
+    client.assert(true, "Dummy test 4.10 should pass");
+  });
+%}
+
+
+### Step 5: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 5,
+  "userId": 1005,
+  "location": {
+    "lat": 46.0000005,
+    "lon": 14.0000005
+  },
+  "materialId": 2900000005
+}
+
+> {%
+  client.test("Step 5 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId5", data.json.userId);
+  client.global.set("materialId5", data.json.materialId);
+  client.global.set("lat5", data.json.location.lat);
+  client.global.set("lon5", data.json.location.lon);
+
+  client.test("Test 5.01", () => {
+    client.assert(true, "Dummy test 5.01 should pass");
+  });
+  client.test("Test 5.02", () => {
+    client.assert(true, "Dummy test 5.02 should pass");
+  });
+  client.test("Test 5.03", () => {
+    client.assert(true, "Dummy test 5.03 should pass");
+  });
+  client.test("Test 5.04", () => {
+    client.assert(true, "Dummy test 5.04 should pass");
+  });
+  client.test("Test 5.05", () => {
+    client.assert(true, "Dummy test 5.05 should pass");
+  });
+  client.test("Test 5.06", () => {
+    client.assert(true, "Dummy test 5.06 should pass");
+  });
+  client.test("Test 5.07", () => {
+    client.assert(true, "Dummy test 5.07 should pass");
+  });
+  client.test("Test 5.08", () => {
+    client.assert(true, "Dummy test 5.08 should pass");
+  });
+  client.test("Test 5.09", () => {
+    client.assert(true, "Dummy test 5.09 should pass");
+  });
+  client.test("Test 5.10", () => {
+    client.assert(true, "Dummy test 5.10 should pass");
+  });
+%}
+
+### Step 5: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 5,
+  "userId": "{{userId5}}",
+  "materialId": "{{materialId5}}",
+  "location": {
+    "lat": "{{lat5}}",
+    "lon": "{{lon5}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 5 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId5"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId5"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 5.01", () => {
+    client.assert(true, "Dummy test 5.01 should pass");
+  });
+  client.test("Test 5.02", () => {
+    client.assert(true, "Dummy test 5.02 should pass");
+  });
+  client.test("Test 5.03", () => {
+    client.assert(true, "Dummy test 5.03 should pass");
+  });
+  client.test("Test 5.04", () => {
+    client.assert(true, "Dummy test 5.04 should pass");
+  });
+  client.test("Test 5.05", () => {
+    client.assert(true, "Dummy test 5.05 should pass");
+  });
+  client.test("Test 5.06", () => {
+    client.assert(true, "Dummy test 5.06 should pass");
+  });
+  client.test("Test 5.07", () => {
+    client.assert(true, "Dummy test 5.07 should pass");
+  });
+  client.test("Test 5.08", () => {
+    client.assert(true, "Dummy test 5.08 should pass");
+  });
+  client.test("Test 5.09", () => {
+    client.assert(true, "Dummy test 5.09 should pass");
+  });
+  client.test("Test 5.10", () => {
+    client.assert(true, "Dummy test 5.10 should pass");
+  });
+%}
+
+
+### Step 6: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 6,
+  "userId": 1006,
+  "location": {
+    "lat": 46.0000006,
+    "lon": 14.0000006
+  },
+  "materialId": 2900000006
+}
+
+> {%
+  client.test("Step 6 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId6", data.json.userId);
+  client.global.set("materialId6", data.json.materialId);
+  client.global.set("lat6", data.json.location.lat);
+  client.global.set("lon6", data.json.location.lon);
+
+  client.test("Test 6.01", () => {
+    client.assert(true, "Dummy test 6.01 should pass");
+  });
+  client.test("Test 6.02", () => {
+    client.assert(true, "Dummy test 6.02 should pass");
+  });
+  client.test("Test 6.03", () => {
+    client.assert(true, "Dummy test 6.03 should pass");
+  });
+  client.test("Test 6.04", () => {
+    client.assert(true, "Dummy test 6.04 should pass");
+  });
+  client.test("Test 6.05", () => {
+    client.assert(true, "Dummy test 6.05 should pass");
+  });
+  client.test("Test 6.06", () => {
+    client.assert(true, "Dummy test 6.06 should pass");
+  });
+  client.test("Test 6.07", () => {
+    client.assert(true, "Dummy test 6.07 should pass");
+  });
+  client.test("Test 6.08", () => {
+    client.assert(true, "Dummy test 6.08 should pass");
+  });
+  client.test("Test 6.09", () => {
+    client.assert(true, "Dummy test 6.09 should pass");
+  });
+  client.test("Test 6.10", () => {
+    client.assert(true, "Dummy test 6.10 should pass");
+  });
+%}
+
+### Step 6: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 6,
+  "userId": "{{userId6}}",
+  "materialId": "{{materialId6}}",
+  "location": {
+    "lat": "{{lat6}}",
+    "lon": "{{lon6}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 6 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId6"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId6"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 6.01", () => {
+    client.assert(true, "Dummy test 6.01 should pass");
+  });
+  client.test("Test 6.02", () => {
+    client.assert(true, "Dummy test 6.02 should pass");
+  });
+  client.test("Test 6.03", () => {
+    client.assert(true, "Dummy test 6.03 should pass");
+  });
+  client.test("Test 6.04", () => {
+    client.assert(true, "Dummy test 6.04 should pass");
+  });
+  client.test("Test 6.05", () => {
+    client.assert(true, "Dummy test 6.05 should pass");
+  });
+  client.test("Test 6.06", () => {
+    client.assert(true, "Dummy test 6.06 should pass");
+  });
+  client.test("Test 6.07", () => {
+    client.assert(true, "Dummy test 6.07 should pass");
+  });
+  client.test("Test 6.08", () => {
+    client.assert(true, "Dummy test 6.08 should pass");
+  });
+  client.test("Test 6.09", () => {
+    client.assert(true, "Dummy test 6.09 should pass");
+  });
+  client.test("Test 6.10", () => {
+    client.assert(true, "Dummy test 6.10 should pass");
+  });
+%}
+
+
+### Step 7: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 7,
+  "userId": 1007,
+  "location": {
+    "lat": 46.0000007,
+    "lon": 14.0000007
+  },
+  "materialId": 2900000007
+}
+
+> {%
+  client.test("Step 7 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId7", data.json.userId);
+  client.global.set("materialId7", data.json.materialId);
+  client.global.set("lat7", data.json.location.lat);
+  client.global.set("lon7", data.json.location.lon);
+
+  client.test("Test 7.01", () => {
+    client.assert(true, "Dummy test 7.01 should pass");
+  });
+  client.test("Test 7.02", () => {
+    client.assert(true, "Dummy test 7.02 should pass");
+  });
+  client.test("Test 7.03", () => {
+    client.assert(true, "Dummy test 7.03 should pass");
+  });
+  client.test("Test 7.04", () => {
+    client.assert(true, "Dummy test 7.04 should pass");
+  });
+  client.test("Test 7.05", () => {
+    client.assert(true, "Dummy test 7.05 should pass");
+  });
+  client.test("Test 7.06", () => {
+    client.assert(true, "Dummy test 7.06 should pass");
+  });
+  client.test("Test 7.07", () => {
+    client.assert(true, "Dummy test 7.07 should pass");
+  });
+  client.test("Test 7.08", () => {
+    client.assert(true, "Dummy test 7.08 should pass");
+  });
+  client.test("Test 7.09", () => {
+    client.assert(true, "Dummy test 7.09 should pass");
+  });
+  client.test("Test 7.10", () => {
+    client.assert(true, "Dummy test 7.10 should pass");
+  });
+%}
+
+### Step 7: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 7,
+  "userId": "{{userId7}}",
+  "materialId": "{{materialId7}}",
+  "location": {
+    "lat": "{{lat7}}",
+    "lon": "{{lon7}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 7 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId7"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId7"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 7.01", () => {
+    client.assert(true, "Dummy test 7.01 should pass");
+  });
+  client.test("Test 7.02", () => {
+    client.assert(true, "Dummy test 7.02 should pass");
+  });
+  client.test("Test 7.03", () => {
+    client.assert(true, "Dummy test 7.03 should pass");
+  });
+  client.test("Test 7.04", () => {
+    client.assert(true, "Dummy test 7.04 should pass");
+  });
+  client.test("Test 7.05", () => {
+    client.assert(true, "Dummy test 7.05 should pass");
+  });
+  client.test("Test 7.06", () => {
+    client.assert(true, "Dummy test 7.06 should pass");
+  });
+  client.test("Test 7.07", () => {
+    client.assert(true, "Dummy test 7.07 should pass");
+  });
+  client.test("Test 7.08", () => {
+    client.assert(true, "Dummy test 7.08 should pass");
+  });
+  client.test("Test 7.09", () => {
+    client.assert(true, "Dummy test 7.09 should pass");
+  });
+  client.test("Test 7.10", () => {
+    client.assert(true, "Dummy test 7.10 should pass");
+  });
+%}
+
+
+### Step 8: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 8,
+  "userId": 1008,
+  "location": {
+    "lat": 46.0000008,
+    "lon": 14.0000008
+  },
+  "materialId": 2900000008
+}
+
+> {%
+  client.test("Step 8 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId8", data.json.userId);
+  client.global.set("materialId8", data.json.materialId);
+  client.global.set("lat8", data.json.location.lat);
+  client.global.set("lon8", data.json.location.lon);
+
+  client.test("Test 8.01", () => {
+    client.assert(true, "Dummy test 8.01 should pass");
+  });
+  client.test("Test 8.02", () => {
+    client.assert(true, "Dummy test 8.02 should pass");
+  });
+  client.test("Test 8.03", () => {
+    client.assert(true, "Dummy test 8.03 should pass");
+  });
+  client.test("Test 8.04", () => {
+    client.assert(true, "Dummy test 8.04 should pass");
+  });
+  client.test("Test 8.05", () => {
+    client.assert(true, "Dummy test 8.05 should pass");
+  });
+  client.test("Test 8.06", () => {
+    client.assert(true, "Dummy test 8.06 should pass");
+  });
+  client.test("Test 8.07", () => {
+    client.assert(true, "Dummy test 8.07 should pass");
+  });
+  client.test("Test 8.08", () => {
+    client.assert(true, "Dummy test 8.08 should pass");
+  });
+  client.test("Test 8.09", () => {
+    client.assert(true, "Dummy test 8.09 should pass");
+  });
+  client.test("Test 8.10", () => {
+    client.assert(true, "Dummy test 8.10 should pass");
+  });
+%}
+
+### Step 8: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 8,
+  "userId": "{{userId8}}",
+  "materialId": "{{materialId8}}",
+  "location": {
+    "lat": "{{lat8}}",
+    "lon": "{{lon8}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 8 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId8"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId8"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 8.01", () => {
+    client.assert(true, "Dummy test 8.01 should pass");
+  });
+  client.test("Test 8.02", () => {
+    client.assert(true, "Dummy test 8.02 should pass");
+  });
+  client.test("Test 8.03", () => {
+    client.assert(true, "Dummy test 8.03 should pass");
+  });
+  client.test("Test 8.04", () => {
+    client.assert(true, "Dummy test 8.04 should pass");
+  });
+  client.test("Test 8.05", () => {
+    client.assert(true, "Dummy test 8.05 should pass");
+  });
+  client.test("Test 8.06", () => {
+    client.assert(true, "Dummy test 8.06 should pass");
+  });
+  client.test("Test 8.07", () => {
+    client.assert(true, "Dummy test 8.07 should pass");
+  });
+  client.test("Test 8.08", () => {
+    client.assert(true, "Dummy test 8.08 should pass");
+  });
+  client.test("Test 8.09", () => {
+    client.assert(true, "Dummy test 8.09 should pass");
+  });
+  client.test("Test 8.10", () => {
+    client.assert(true, "Dummy test 8.10 should pass");
+  });
+%}
+
+
+### Step 9: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 9,
+  "userId": 1009,
+  "location": {
+    "lat": 46.0000009,
+    "lon": 14.0000009
+  },
+  "materialId": 2900000009
+}
+
+> {%
+  client.test("Step 9 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId9", data.json.userId);
+  client.global.set("materialId9", data.json.materialId);
+  client.global.set("lat9", data.json.location.lat);
+  client.global.set("lon9", data.json.location.lon);
+
+  client.test("Test 9.01", () => {
+    client.assert(true, "Dummy test 9.01 should pass");
+  });
+  client.test("Test 9.02", () => {
+    client.assert(true, "Dummy test 9.02 should pass");
+  });
+  client.test("Test 9.03", () => {
+    client.assert(true, "Dummy test 9.03 should pass");
+  });
+  client.test("Test 9.04", () => {
+    client.assert(true, "Dummy test 9.04 should pass");
+  });
+  client.test("Test 9.05", () => {
+    client.assert(true, "Dummy test 9.05 should pass");
+  });
+  client.test("Test 9.06", () => {
+    client.assert(true, "Dummy test 9.06 should pass");
+  });
+  client.test("Test 9.07", () => {
+    client.assert(true, "Dummy test 9.07 should pass");
+  });
+  client.test("Test 9.08", () => {
+    client.assert(true, "Dummy test 9.08 should pass");
+  });
+  client.test("Test 9.09", () => {
+    client.assert(true, "Dummy test 9.09 should pass");
+  });
+  client.test("Test 9.10", () => {
+    client.assert(true, "Dummy test 9.10 should pass");
+  });
+%}
+
+### Step 9: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 9,
+  "userId": "{{userId9}}",
+  "materialId": "{{materialId9}}",
+  "location": {
+    "lat": "{{lat9}}",
+    "lon": "{{lon9}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 9 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId9"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId9"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 9.01", () => {
+    client.assert(true, "Dummy test 9.01 should pass");
+  });
+  client.test("Test 9.02", () => {
+    client.assert(true, "Dummy test 9.02 should pass");
+  });
+  client.test("Test 9.03", () => {
+    client.assert(true, "Dummy test 9.03 should pass");
+  });
+  client.test("Test 9.04", () => {
+    client.assert(true, "Dummy test 9.04 should pass");
+  });
+  client.test("Test 9.05", () => {
+    client.assert(true, "Dummy test 9.05 should pass");
+  });
+  client.test("Test 9.06", () => {
+    client.assert(true, "Dummy test 9.06 should pass");
+  });
+  client.test("Test 9.07", () => {
+    client.assert(true, "Dummy test 9.07 should pass");
+  });
+  client.test("Test 9.08", () => {
+    client.assert(true, "Dummy test 9.08 should pass");
+  });
+  client.test("Test 9.09", () => {
+    client.assert(true, "Dummy test 9.09 should pass");
+  });
+  client.test("Test 9.10", () => {
+    client.assert(true, "Dummy test 9.10 should pass");
+  });
+%}
+
+
+### Step 10: Send data
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "step": 10,
+  "userId": 1010,
+  "location": {
+    "lat": 46.0000010,
+    "lon": 14.0000010
+  },
+  "materialId": 2900000010
+}
+
+> {%
+  client.test("Step 10 - Status 200", () => {
+    client.assert(response.status === 200, "Expected 200");
+  });
+
+  const data = response.body;
+
+  client.global.set("userId10", data.json.userId);
+  client.global.set("materialId10", data.json.materialId);
+  client.global.set("lat10", data.json.location.lat);
+  client.global.set("lon10", data.json.location.lon);
+
+  client.test("Test 10.01", () => {
+    client.assert(true, "Dummy test 10.01 should pass");
+  });
+  client.test("Test 10.02", () => {
+    client.assert(true, "Dummy test 10.02 should pass");
+  });
+  client.test("Test 10.03", () => {
+    client.assert(true, "Dummy test 10.03 should pass");
+  });
+  client.test("Test 10.04", () => {
+    client.assert(true, "Dummy test 10.04 should pass");
+  });
+  client.test("Test 10.05", () => {
+    client.assert(true, "Dummy test 10.05 should pass");
+  });
+  client.test("Test 10.06", () => {
+    client.assert(true, "Dummy test 10.06 should pass");
+  });
+  client.test("Test 10.07", () => {
+    client.assert(true, "Dummy test 10.07 should pass");
+  });
+  client.test("Test 10.08", () => {
+    client.assert(true, "Dummy test 10.08 should pass");
+  });
+  client.test("Test 10.09", () => {
+    client.assert(true, "Dummy test 10.09 should pass");
+  });
+  client.test("Test 10.10", () => {
+    client.assert(true, "Dummy test 10.10 should pass");
+  });
+%}
+
+### Step 10: Echo data back using variables
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "echoStep": 10,
+  "userId": "{{userId10}}",
+  "materialId": "{{materialId10}}",
+  "location": {
+    "lat": "{{lat10}}",
+    "lon": "{{lon10}}"
+  }
+}
+
+> {%
+  const body = response.body.json;
+
+  client.test("Step 10 - Echo check", () => {
+    client.assert(body.userId == client.global.get("userId10"), "UserId mismatch in echo");
+    client.assert(body.materialId == client.global.get("materialId10"), "MaterialId mismatch in echo");
+  });
+
+  client.test("Test 10.01", () => {
+    client.assert(true, "Dummy test 10.01 should pass");
+  });
+  client.test("Test 10.02", () => {
+    client.assert(true, "Dummy test 10.02 should pass");
+  });
+  client.test("Test 10.03", () => {
+    client.assert(true, "Dummy test 10.03 should pass");
+  });
+  client.test("Test 10.04", () => {
+    client.assert(true, "Dummy test 10.04 should pass");
+  });
+  client.test("Test 10.05", () => {
+    client.assert(true, "Dummy test 10.05 should pass");
+  });
+  client.test("Test 10.06", () => {
+    client.assert(true, "Dummy test 10.06 should pass");
+  });
+  client.test("Test 10.07", () => {
+    client.assert(true, "Dummy test 10.07 should pass");
+  });
+  client.test("Test 10.08", () => {
+    client.assert(true, "Dummy test 10.08 should pass");
+  });
+  client.test("Test 10.09", () => {
+    client.assert(true, "Dummy test 10.09 should pass");
+  });
+  client.test("Test 10.10", () => {
+    client.assert(true, "Dummy test 10.10 should pass");
+  });
+%}

@@ -1,0 +1,15 @@
+### IJPL-66178 Accessing HTTP client "in-place variable" from response handler
+@my_variable = 5
+
+POST https://examples.http-client.intellij.net/anything/{{my_variable}}
+Content-Type: application/json
+
+{
+    "variable": {{my_variable}}   // this works
+}
+
+> {%
+  console.log(client.variables.file)
+  console.log(client.global.get("my_variable"));  // undefined
+%}
+

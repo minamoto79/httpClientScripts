@@ -1,0 +1,396 @@
+# User Information
+#@userId1 = 12345
+#@username1 = test_user1@example.com
+#@clientId1 = 11111111-91b6-479a-bf3f-e0c48b527f87
+#@sessionId1 = {{$uuid}}
+
+# User 2
+@userId2 = 67890
+@username2 = test_user2@example.com
+@clientId2 = 22222222-46a3-4659-af67-95ff3700326c
+@sessionId2 = {{$uuid}}
+
+# Product Information
+@productId = 9876543210
+@productName = Test Product
+@productPrice = 99.99
+
+# Location Information
+@latitude = 46.0569524
+@longitude = 14.5058664
+
+### Create a new user
+< {%
+ console.log(`>>> ${client.variables.environment.get("userId1")}`)
+ console.log(`>>> ${client.variables.file.get("userId2")}`)
+ %}
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "userId": {{userId1}},
+  "username": "{{username1}}",
+  "clientId": "{{clientId1}}",
+  "createdAt": "{{$isoTimestamp}}",
+  "role": "admin",
+  "active": true
+}
+
+> {%
+    console.log(`>>> ${client.variables.file.get("userId2")}`)
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct user data", function() {
+        const responseData = response.body.json;
+        console.log(request.environment.get("userId1"))
+        console.log(`${responseData.userId} === ${client.variables.environment.get("userId1")}`);
+        client.assert(responseData.userId === parseInt(client.variables.environment.get("userId1")), "userId doesn't match");
+        client.assert(responseData.username === client.variables.environment.get("username1"), "username doesn't match");
+        client.assert(responseData.clientId === client.variables.environment.get("clientId1"), "clientId doesn't match");
+        client.assert(responseData.role === "admin", "role doesn't match");
+        client.assert(responseData.active === true, "active status doesn't match");
+    });
+    
+    client.global.set("createdUserId", response.body.json.userId);
+%}
+
+### Create a product
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "productId": {{productId}},
+  "name": "{{productName}}",
+  "price": {{productPrice}},
+  "createdBy": {{userId1}},
+  "createdAt": "{{$isoTimestamp}}",
+  "inStock": true,
+  "categories": ["electronics", "gadgets"]
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct product data", function() {
+        const requestData = response.body.json;
+        client.assert(requestData.productId === client.global.get("productId"), "productId doesn't match");
+        client.assert(requestData.name === client.global.get("productName"), "product name doesn't match");
+        client.assert(requestData.price === client.global.get("productPrice"), "price doesn't match");
+        client.assert(requestData.createdBy === client.global.get("userId1"), "createdBy doesn't match");
+        client.assert(requestData.inStock === true, "inStock status doesn't match");
+        client.assert(Array.isArray(requestData.categories), "categories is not an array");
+        client.assert(requestData.categories.includes("electronics"), "categories doesn't include electronics");
+        client.assert(requestData.categories.includes("gadgets"), "categories doesn't include gadgets");
+    });
+    
+    client.global.set("createdProductId", response.body.json.productId);
+%}
+
+### Create an order
+@orderId = {{$random.integer(10000, 99999)}}
+@orderQuantity = 5
+@totalPrice = 499.95
+
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}},
+  "userId": {{userId1}},
+  "productId": {{productId}},
+  "quantity": {{orderQuantity}},
+  "totalPrice": {{totalPrice}},
+  "shippingAddress": {
+    "street": "123 Test Street",
+    "city": "Test City",
+    "zipCode": "12345",
+    "country": "Test Country"
+  },
+  "orderDate": "{{$isoTimestamp}}",
+  "status": "pending"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct order data", function() {
+        const requestData = response.body.json;
+        client.assert(requestData.orderId === client.global.get("orderId"), "orderId doesn't match");
+        client.assert(requestData.userId === client.global.get("userId1"), "userId doesn't match");
+        client.assert(requestData.productId === client.global.get("productId"), "productId doesn't match");
+        client.assert(requestData.quantity === client.global.get("orderQuantity"), "quantity doesn't match");
+        
+        const expectedTotal = client.global.get("productPrice") * client.global.get("orderQuantity");
+        client.assert(requestData.totalPrice === expectedTotal, "totalPrice doesn't match");
+        
+        client.assert(requestData.shippingAddress.street === "123 Test Street", "street doesn't match");
+        client.assert(requestData.shippingAddress.city === "Test City", "city doesn't match");
+        client.assert(requestData.shippingAddress.zipCode === "12345", "zipCode doesn't match");
+        client.assert(requestData.shippingAddress.country === "Test Country", "country doesn't match");
+        
+        client.assert(requestData.status === "pending", "status doesn't match");
+    });
+    
+    client.global.set("createdOrderId", response.body.json.orderId);
+%}
+
+### Update order status
+@newStatus = "processing"
+
+PUT https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}},
+  "status": "{{newStatus}}",
+  "updatedAt": "{{$isoTimestamp}}",
+  "updatedBy": {{userId2}}
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct update data", function() {
+        const requestData = response.body.json;
+        client.assert(requestData.orderId === client.global.get("orderId"), "orderId doesn't match");
+        client.assert(requestData.status === client.global.get("newStatus"), "status doesn't match");
+        client.assert(requestData.updatedBy === client.global.get("userId2"), "updatedBy doesn't match");
+    });
+%}
+
+### Complete the order
+@finalStatus = "completed"
+@trackingNumber = "TRK-{{$random.integer(100000, 999999)}}"
+
+PUT https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "orderId": {{orderId}},
+  "status": "{{finalStatus}}",
+  "completedAt": "{{$isoTimestamp}}",
+  "completedBy": {{userId2}},
+  "trackingNumber": "{{trackingNumber}}",
+  "deliveryDetails": {
+    "carrier": "Test Carrier",
+    "estimatedDelivery": "{{$isoDatetime(5)}}"
+  }
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct completion data", function() {
+        const requestData = response.body.json;
+        client.assert(requestData.orderId === client.global.get("orderId"), "orderId doesn't match");
+        client.assert(requestData.status === client.global.get("finalStatus"), "status doesn't match");
+        client.assert(requestData.completedBy === client.global.get("userId2"), "completedBy doesn't match");
+        client.assert(requestData.trackingNumber === client.global.get("trackingNumber"), "trackingNumber doesn't match");
+        client.assert(requestData.deliveryDetails.carrier === "Test Carrier", "carrier doesn't match");
+    });
+%}
+
+### Get order details with position data
+GET https://examples.http-client.intellij.net/anything?orderId={{orderId}}
+Content-Type: application/json
+
+{
+  "position": {
+    "latitude": {{latitude}},
+    "longitude": {{longitude}},
+    "accuracy": 5.0,
+    "timestamp": "{{$isoTimestamp}}"
+  },
+  "requestedBy": {{userId1}}
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request contains correct query parameters", function() {
+        client.assert(response.body.args.orderId === String(client.global.get("orderId")), "orderId query param doesn't match");
+    });
+    
+    client.test("Request body contains correct position data", function() {
+        const requestData = response.body.json;
+        client.assert(requestData.position.latitude === client.global.get("latitude"), "latitude doesn't match");
+        client.assert(requestData.position.longitude === client.global.get("longitude"), "longitude doesn't match");
+        client.assert(requestData.position.accuracy === 5.0, "accuracy doesn't match");
+        client.assert(requestData.requestedBy === client.global.get("userId1"), "requestedBy doesn't match");
+    });
+%}
+
+### Create a batch of events
+@eventId1 = {{$uuid}}
+@eventId2 = {{$uuid}}
+
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+[
+  {
+    "eventId": "{{eventId1}}",
+    "type": "ORDER_SHIPPED",
+    "orderId": {{orderId}},
+    "userId": {{userId1}},
+    "timestamp": "{{$isoTimestamp}}",
+    "data": {
+      "trackingNumber": "{{trackingNumber}}",
+      "carrier": "Test Carrier"
+    }
+  },
+  {
+    "eventId": "{{eventId2}}",
+    "type": "NOTIFICATION_SENT",
+    "orderId": {{orderId}},
+    "userId": {{userId1}},
+    "timestamp": "{{$isoTimestamp}}",
+    "data": {
+      "method": "email",
+      "recipient": "{{username1}}",
+      "subject": "Your order has shipped"
+    }
+  }
+]
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct batch events data", function() {
+        const requestData = response.body.json;
+        client.assert(Array.isArray(requestData), "Request data is not an array");
+        client.assert(requestData.length === 2, "Request data doesn't contain 2 events");
+        
+        const event1 = requestData[0];
+        client.assert(event1.eventId === client.global.get("eventId1"), "eventId1 doesn't match");
+        client.assert(event1.type === "ORDER_SHIPPED", "event1 type doesn't match");
+        client.assert(event1.orderId === client.global.get("orderId"), "event1 orderId doesn't match");
+        client.assert(event1.userId === client.global.get("userId1"), "event1 userId doesn't match");
+        client.assert(event1.data.trackingNumber === client.global.get("trackingNumber"), "event1 trackingNumber doesn't match");
+        
+        const event2 = requestData[1];
+        client.assert(event2.eventId === client.global.get("eventId2"), "eventId2 doesn't match");
+        client.assert(event2.type === "NOTIFICATION_SENT", "event2 type doesn't match");
+        client.assert(event2.orderId === client.global.get("orderId"), "event2 orderId doesn't match");
+        client.assert(event2.userId === client.global.get("userId1"), "event2 userId doesn't match");
+        client.assert(event2.data.method === "email", "event2 method doesn't match");
+        client.assert(event2.data.recipient === client.global.get("username1"), "event2 recipient doesn't match");
+    });
+    
+    client.global.set("shippedEventId", response.body.json[0].eventId);
+    client.global.set("notificationEventId", response.body.json[1].eventId);
+%}
+
+### Create a complex nested data structure
+POST https://examples.http-client.intellij.net/anything
+Content-Type: application/json
+
+{
+  "metadata": {
+    "requestId": "{{$uuid}}",
+    "timestamp": "{{$isoTimestamp}}",
+    "source": "http-client-test"
+  },
+  "user": {
+    "id": {{userId1}},
+    "username": "{{username1}}",
+    "sessionId": "{{sessionId1}}"
+  },
+  "orders": [
+    {
+      "id": {{orderId}},
+      "status": "{{finalStatus}}",
+      "items": [
+        {
+          "productId": {{productId}},
+          "name": "{{productName}}",
+          "quantity": {{orderQuantity}},
+          "price": {{productPrice}}
+        }
+      ],
+      "total": {{totalPrice}}
+    }
+  ],
+  "events": [
+    {
+      "id": "{{eventId1}}",
+      "type": "ORDER_SHIPPED"
+    },
+    {
+      "id": "{{eventId2}}",
+      "type": "NOTIFICATION_SENT"
+    }
+  ],
+  "analytics": {
+    "userAgent": "IntelliJ HTTP Client",
+    "ipAddress": "127.0.0.1",
+    "location": {
+      "latitude": {{latitude}},
+      "longitude": {{longitude}}
+    }
+  }
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+    
+    client.test("Request body contains correct complex nested data", function() {
+        const requestData = response.body.json;
+        
+        // Metadata checks
+        client.assert(requestData.metadata.source === "http-client-test", "metadata source doesn't match");
+        
+        // User checks
+        client.assert(requestData.user.id === client.global.get("userId1"), "user id doesn't match");
+        client.assert(requestData.user.username === client.global.get("username1"), "username doesn't match");
+        client.assert(requestData.user.sessionId === client.global.get("sessionId1"), "sessionId doesn't match");
+        
+        // Orders checks
+        client.assert(Array.isArray(requestData.orders), "orders is not an array");
+        client.assert(requestData.orders.length === 1, "orders array length doesn't match");
+        client.assert(requestData.orders[0].id === client.global.get("orderId"), "order id doesn't match");
+        client.assert(requestData.orders[0].status === client.global.get("finalStatus"), "order status doesn't match");
+        
+        // Order items checks
+        client.assert(Array.isArray(requestData.orders[0].items), "order items is not an array");
+        client.assert(requestData.orders[0].items.length === 1, "order items array length doesn't match");
+        client.assert(requestData.orders[0].items[0].productId === client.global.get("productId"), "product id doesn't match");
+        client.assert(requestData.orders[0].items[0].name === client.global.get("productName"), "product name doesn't match");
+        client.assert(requestData.orders[0].items[0].quantity === client.global.get("orderQuantity"), "quantity doesn't match");
+        client.assert(requestData.orders[0].items[0].price === client.global.get("productPrice"), "price doesn't match");
+        
+        // Total check
+        const expectedTotal = client.global.get("productPrice") * client.global.get("orderQuantity");
+        client.assert(requestData.orders[0].total === expectedTotal, "order total doesn't match");
+        
+        // Events checks
+        client.assert(Array.isArray(requestData.events), "events is not an array");
+        client.assert(requestData.events.length === 2, "events array length doesn't match");
+        client.assert(requestData.events[0].id === client.global.get("eventId1"), "event1 id doesn't match");
+        client.assert(requestData.events[0].type === "ORDER_SHIPPED", "event1 type doesn't match");
+        client.assert(requestData.events[1].id === client.global.get("eventId2"), "event2 id doesn't match");
+        client.assert(requestData.events[1].type === "NOTIFICATION_SENT", "event2 type doesn't match");
+        
+        // Analytics checks
+        client.assert(requestData.analytics.userAgent === "IntelliJ HTTP Client", "userAgent doesn't match");
+        client.assert(requestData.analytics.ipAddress === "127.0.0.1", "ipAddress doesn't match");
+        client.assert(requestData.analytics.location.latitude === client.global.get("latitude"), "latitude doesn't match");
+        client.assert(requestData.analytics.location.longitude === client.global.get("longitude"), "longitude doesn't match");
+    });
+%}

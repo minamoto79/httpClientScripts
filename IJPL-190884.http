@@ -1,0 +1,5 @@
+POST {{host}}/anything/{{some-loop-variable}}
+
+{
+   "key": "{{some-loop-variable}}"
+}

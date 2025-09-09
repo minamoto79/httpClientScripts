@@ -1,0 +1,30 @@
+### IJPL-205919 http-client: cryptic exception message on missed parameters to RSA/DSA alogorithms.
+< {%
+
+    let algorithm = {
+        name: 'RSASSA-PKCS1-v1_5',
+        modulusLength: 4096,                       // 2048 or 4096 bits recommended
+        publicExponent: new Uint8Array([1, 0, 1]), // 65537 (standard exponent)
+        //hash: "SHA-512"
+    };
+    const pair = crypto.subtle.generateKey(algorithm,
+        true,
+        ['sign', 'verify']);
+
+    let otherClaim = 'Servus, HTTP Client Pre Script!!!';
+
+    const rsaSignature = crypto.subtle.sign({
+            name: "RSASSA-PKCS1-v1_5",
+            saltLength: 32,
+        },
+        pair.privateKey,
+        Uint8Array.from(otherClaim, c => c.charCodeAt(0)))
+
+    console.log(`verify ${otherClaim}: ${crypto.subtle.verify({
+        name: "RSASSA-PKCS1-v1_5",
+        saltLength: 32,
+    }, pair.publicKey, rsaSignature, Uint8Array.from(otherClaim, c => c.charCodeAt(0)))}`);
+
+%}
+
+GET examples.http-client.intellij.net/anything

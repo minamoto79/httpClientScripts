@@ -1,0 +1,47 @@
+< {%
+
+    function addBase64Padding(base64String) {
+        const paddingNeeded = base64String.length % 4;
+        if (paddingNeeded == 2) {
+            return base64String + '==';
+        } else if (paddingNeeded == 3) {
+            return base64String + '=';
+        } else {
+            return base64String;
+        }
+    }
+
+    const hash = addBase64Padding(
+        crypto.hmac.sha256()
+            .withTextSecret('xx')
+            .updateWithText('yy')
+            .digest()
+            .toBase64(true))
+        .replace(/-/g, '+')
+    // .replace(/\//g, '_')
+    // .replace(/=+$/, '');
+    request.variables.set("authentication-secret-hash", hash)
+    console.log(request.environment.get("authentication-client-secret"));
+    console.log(request.environment.get("authentication-username"));
+    console.log(request.environment.get("authentication-client-id"));
+    console.log(hash);
+%}
+
+POST https://cognito-idp.us-east-1.amazonaws.com/auth/v1/login
+Content-Type: application/x-amz-json-1.1
+X-Amz-Target: AWSCognitoIdentityProviderService.InitiateAuth
+
+{
+    "AuthParameters": {
+        "USERNAME": "xxx",
+        "PASSWORD": "yyy",
+        "SECRET_HASH": "yyy"
+    },
+    "AuthFlow": "USER_PASSWORD_AUTH",
+    "ClientId": "xxx"
+}
+
+> {%
+    console.log(response.body?.AuthenticationResult?.IdToken);
+    client.global.set("authentication-token", response.body?.AuthenticationResult?.IdToken);
+%}

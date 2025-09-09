@@ -1,0 +1,15 @@
+###
+< {%
+    client.variables.request.set("xxx", "yyy")
+%}
+GET http://examples.http-client.intellij.net/
+
+> {%
+ console.log(client.variables.request.get("xxx"))
+ %}
+
+###
+< {%
+    console.log(request.variables.get("xxx"))
+%}
+GET http://examples.http-client.intellij.net

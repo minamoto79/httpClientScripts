@@ -1,0 +1,25 @@
+@foo = 9999999999999999999
+### big number test
+POST http://httpbin.org/post
+Content-Type: application/json
+
+{
+    "foo": {{foo}}
+}
+> {%
+    client.test("big-number-test", () => {
+        // the json property is response of httpbin
+        console.log(response.body.json.foo)
+    })
+%}
+
+### big number 0
+
+
+POST http://httpbin.org/post
+Content-Type: application/json
+
+{
+    "foo": {{foo}}
+}
+

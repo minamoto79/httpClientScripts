@@ -1,0 +1,10 @@
+###
+< {%
+    console.log(`environment: ${request.environment.get("nonexist")}`)
+    console.log(`environment: ${client.variables.environment.get("nonexist")}`);
+
+    console.log(`global: ${client.global.get("nonexist")}`);
+    console.log(`global: ${client.variables.global.get("nonexist")}`);
+%}
+
+GET examples.http-client.intellij.net

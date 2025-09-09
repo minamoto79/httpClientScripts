@@ -1,0 +1,39 @@
+### Reproducer for GraalVM JS multi-threaded access in location hint resolution
+# Steps to reproduce (IDE):
+# 1) Open this file in IntelliJ IDEA
+# 2) Use HTTP Client action: Run All (or run this single request)
+# 3) Engine: GraalVM (default for IDE). The exception appears when collecting test location hints.
+# Expected exception (from issue):
+# java.lang.IllegalStateException: Multi threaded access requested by thread ... but is not allowed for language(s) js.
+#   at com.oracle.truffle.polyglot.PolyglotContextImpl.throwDeniedThreadAccess(...)
+#   at ... HttpClientGraalVmJsResponseHandler.getLocationHint(...)
+
+GET http://examples.http-client.intellij.net
+
+> {%
+    // Define several tests in the response handler. Each test captures a JS Error during registration
+    // (see js-graalvm-response-handler.js: client.test). Later, location hint resolution reads the
+    // captured Error from a different thread, provoking the exception.
+    client.test("T1", () => {
+        client.assert(true, "no-op")
+    })
+
+    client.test("T2", () => {
+        client.assert(true, "no-op")
+    })
+
+    // Force test printing and reporting by adding a failing test
+    client.test("Failing test", () => {
+        client.assert(false, "Intentional failure to ensure test printer activity")
+    })
+
+    // A test without a body is also valid; it still captures a creation stack
+    client.test("Response Handler")
+%}
+
+###
+GET http://examples.http-client.intellij.net
+
+> {%
+    client.test("Null test")
+%}

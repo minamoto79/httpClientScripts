@@ -1,0 +1,136 @@
+### Make an authorized request
+@secret = zzzzz
+
+
+< {%
+
+    let algorithm = {
+        name: 'RSA-PSS',
+        modulusLength: 2048,                       // 2048 or 4096 bits recommended
+        publicExponent: new Uint8Array([1, 0, 1]), // 65537 (standard exponent)
+        hash: "SHA-256"
+    };
+    const pair = crypto.subtle.generateKey(algorithm,
+        true,
+        ['sign', 'verify']);
+
+    let otherClaim = 'Servus, HTTP Client Pre Script!!!';
+
+    const rsaSignature = crypto.subtle.sign({
+        name: "RSA-PSS",
+        saltLength: 32
+    },
+        pair.privateKey,
+        Uint8Array.from(otherClaim, c => c.charCodeAt(0)))
+
+    console.log(`verify ${otherClaim}: ${crypto.subtle.verify({name: "RSA-PSS", saltLength: 32}, pair.publicKey, rsaSignature, Uint8Array.from(otherClaim, c => c.charCodeAt(0)))}`);
+
+
+    const rsaJwt = jwt.sign({
+        other_claim: otherClaim,
+    }, pair.privateKey, {
+        algorithm: 'PS256'
+    })
+
+
+    console.log(`RSA JWT: ${rsaJwt}`)
+
+    console.log(`RSA verification: ${jwt.verify(rsaJwt, pair.publicKey, {algorithm: 'PS256'})}`)
+
+    let publicKey = btoa(String.fromCharCode(...new Uint8Array(crypto.subtle.exportKey("spki", pair.publicKey))));
+    console.log(`public key: \n-----BEGIN PUBLIC KEY-----\n${publicKey.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`)
+
+
+%}
+GET examples.http-client.intellij.net/anything
+Authorization: Bearer {{jwt_token}}
+
+{
+ "Autor": {{jwt_token}}
+}
+
+> {%
+    console.log(client.variables.file.get("secret"))
+
+%}
+
+### jwt decode
+< {%
+
+    const signature = jwt.sign({
+        other_claim: "some value",
+        aud:['minamoto']
+    }, client.variables.file.get('secret'))
+
+    console.log(`signature: ${JSON.stringify(jwt.decode(signature))}`)
+
+
+    client.variables.global.set("jwt_token", signature)
+    console.log(signature)
+    //console.log(jwt.verify(signature, client.variables.file.get('secret'), { audience: 'minamoto'}))
+ %}
+
+GET examples.http-client.intellij.net/anything
+
+### jwt audience
+< {%
+
+    const signature = jwt.sign({
+        other_claim: "some value",
+        aud:['minamoto']
+    }, client.variables.file.get('secret'))
+
+    console.log(`signature: ${jwt.decode(signature).payload.aud}`)
+
+
+    client.variables.global.set("jwt_token", signature)
+    console.log(jwt.verify(signature, client.variables.file.get('secret'), {
+        audience: 'minamoto',
+        algorithm: 'HS256'
+    }))
+    console.log(signature)
+%}
+
+GET examples.http-client.intellij.net/anything
+###
+< {%
+    const text = "Hello, RSASSA-PKCS1-v1_5!";
+    const data = Window.btoa(text);
+
+    // Step 1: Generate RSA key pair
+    const keyPair = crypto.subtle.generateKey(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            modulusLength: 2048,       // Key size in bits
+            publicExponent: new Uint8Array([1, 0, 1]), // 0x10001
+            hash: "SHA-256", // Use SHA-256 for hashing
+        },
+        true,   // extractable
+        ["sign", "verify"]
+    );
+
+    // Step 2: Sign the message with the private key
+    const signature = crypto.subtle.sign(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+        },
+        keyPair.privateKey,
+        data
+    );
+
+    console.log("Signature (base64):", Window.btoa(signature));
+
+    // Step 3: Verify the signature using the public key
+    const isValid = crypto.subtle.verify(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+        },
+        keyPair.publicKey,
+        signature,
+        data
+    );
+
+    console.log("Signature valid?", isValid);
+%}
+
+GET examples.http-client.intellij.net/anything

@@ -1,0 +1,916 @@
+# User 1
+@clientId1 = 11111111-91b6-479a-bf3f-e0c48b527f87
+@sessionId1 = {{$uuid}}
+@username1 = qa_mobile1@login5.org
+@userId1 = 3796965115
+
+# User 2
+@clientId2 = 22222222-46a3-4659-af67-95ff3700326c
+@session2 = {{$uuid}}
+@username2 = qa_mobile2@login5.org
+@userId2 = 3796965116
+
+# Ovas, organic
+@materialId = 2918617797
+
+@latitude = 46.0569524
+@longitude = 14.5058664
+@host = examples.http-client.intellij.net
+
+### Find farm
+GET {{host}}/anything/farms
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "id" : {{$random.integer(1000)}}
+}
+
+> {%
+    import {assertStatusCode} from "utils/utils"
+
+    assertStatusCode(200)
+
+
+    client.global.set("farmId", response.body[0].id)
+%}
+
+### Find vehicle model
+GET {{host}}/anything/v2/vehicles/models?manufacturerName=Claas
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "utils/utils"
+
+    assertStatusCode(200)
+
+    client.global.set("vehicleModelId", response.body[0].id)
+%}
+
+### Create vehicle
+@vehicleNumber = {{$random.integer(1, 10000)}}
+
+POST {{host}}/api/v2/vehicles
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "internalName": "Tractor (dev-{{vehicleNumber}})",
+    "registrationNumber": "BE-{{vehicleNumber}}",
+    "farmId": {{farmId}},
+    "model": {
+      "id": {{vehicleModelId}}
+    }
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.global.set("vehicleId", response.body.locationId)
+    client.log(client.global.get("vehicleId"))
+%}
+
+### Find implement model
+GET {{host}}/api/v2/implements/models?manufacturerName=Umega
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    const implementModel = response.body.find(model => model.type === "LOADING_TRAILER")
+    client.global.set("implementModelId", implementModel.id);
+%}
+
+### Create implement
+@implementNumber = {{$random.integer(1, 10000)}}
+
+POST {{host}}/api/v2/implements
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "internalName": "Pretovarna ({{implementNumber}})",
+    "registrationNumber": "BE-{{implementNumber}}",
+    "farmId": {{farmId}},
+    "model": {
+        "id": {{implementModelId}}
+    }
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.global.set("implementId", response.body.locationId)
+    client.log(client.global.get("implementId"))
+    client.global.set("implementName", response.body.name)
+    client.global.set("implementReg", response.body.registrationNumber)
+%}
+
+### Create carrier
+@carrierNumber = {{$random.integer(1, 10000)}}
+
+PUT {{host}}/api/v2/carriers
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+  "transportName": "DTD (dev-{{carrierNumber}})",
+  "registrationNumber": "BE-{{carrierNumber}}",
+  "companyName": "BE",
+  "companyAddress": "BE",
+  "companyVat": "BE",
+  "companyRegistrationNumber": "BE"
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.global.set("carrierId", response.body.locationId)
+    client.log(client.global.get("carrierId"))
+%}
+
+### Find product
+GET {{host}}/api/v2/materials/{{materialId}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    client.global.set("productId", response.body.uuid)
+    client.global.set("productName", response.body.name)
+
+    client.global.set("lotName", "TEMP:098095")
+%}
+
+### Harvester (user1) unloads to Pretovarna (user2) the 1. time
+@handshakeId1 = {{$uuid}}
+@handshakeItemId1 = {{$uuid}}
+
+< {%
+    client.global.set("unload1Quantity", 5000)
+%}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId1}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":true,\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId1}}\",\"handshakeItemId\":\"{{handshakeItemId1}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_UNKNOWN\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\"}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{sessionId1}}",
+        "streamSequence": 1,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$timestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username1}}"
+    },
+    {
+      "clientId": "{{clientId2}}",
+      "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId1}}\",\"handshakeItemId\":\"{{handshakeItemId1}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"LOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload1Quantity}}.0}",
+      "eventId": "{{$uuid}}",
+      "position": {
+        "altitude": 0.0,
+        "bearing": 0.0,
+        "bearingAccuracy": 0.0,
+        "horizontalAccuracy": 5.0,
+        "latitude": {{latitude}},
+        "longitude": {{longitude}},
+        "provider": "fused",
+        "speed": 0.0,
+        "speedAccuracy": 0.5,
+        "time": "{{$isoTimestamp}}",
+        "verticalAccuracy": 0.5
+      },
+      "streamId": "{{session2}}",
+      "streamSequence": 1,
+      "source": "WORK_ORDERS_MOBILE",
+      "time": "{{$isoTimestamp}}",
+      "type": "org.login5:workorders:MaterialTransferredEvent",
+      "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {assertStatusCode, sleep} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check that candidate exists
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body.find(task => task.transportId === client.global.get("implementId"))
+
+        client.assert(task.id === null)
+        client.assert(task.version === null)
+        client.assert(task.state === null)
+        client.assert(task.dispatchNoteNumber === null)
+        client.assert(task.receiverPartnerId === null)
+        client.assert(task.createdTimestamp === null)
+        client.assert(task.createdLatitude === null)
+        client.assert(task.createdLongitude === null)
+        client.assert(task.lastModifiedTimestamp === null)
+        client.assert(task.receivingOrderNumber === null)
+        client.assert(task.receivingOrderVersion === null)
+        client.assert(task.dispatchOrderNumber === null)
+        client.assert(task.transportName === client.global.get("implementName"))
+        client.assert(task.transportRegistrationNumber === client.global.get("implementReg"))
+        client.assert(task.originalProductId === client.global.get("productId"))
+        client.assert(task.originalProductName === client.global.get("productName"))
+        client.assert(task.productId === null)
+        client.assert(task.productName === null)
+        client.assert(task.autoLotName === client.global.get("lotName"))
+        client.assert(task.lotId === null)
+        client.assert(task.lotName === null)
+        client.assert(task.locationGroupName === null)
+        client.assert(task.driverId === null)
+        client.assert(task.driverName === null)
+        client.assert(task.quantity === null)
+        client.assert(task.comment === null)
+        client.assert(task.dispatchedTimestamp === null)
+        client.assert(task.dispatchedBy === null)
+        client.assert(task.analysis === null)
+        client.assert(task.moveQuantity.value === client.global.get("unload1Quantity"))
+        client.assert(task.moves.length === 1)
+        client.assert(task.moves[0].type === "UNLOAD")
+        client.assert(task.moves[0].transportId === client.global.get("vehicleId"))
+        client.assert(task.moves[0].quantity.value === client.global.get("unload1Quantity"))
+        client.assert(task.moves[0].mistakenNote === null)
+    });
+%}
+
+### Harvester (user1) unloads to Pretovarna (user2) the 2. time
+@handshakeId2 = {{$uuid}}
+@handshakeItemId2 = {{$uuid}}
+
+< {%
+    client.global.set("unload2Quantity", 3000)
+%}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId1}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":true,\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId2}}\",\"handshakeItemId\":\"{{handshakeItemId2}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId2}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId2}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_UNKNOWN\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\"}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{sessionId1}}",
+        "streamSequence": 2,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$timestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username1}}"
+    },
+    {
+      "clientId": "{{clientId2}}",
+      "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId2}}\",\"handshakeItemId\":\"{{handshakeItemId2}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId1}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"LOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload2Quantity}}.0}",
+      "eventId": "{{$uuid}}",
+      "position": {
+        "altitude": 0.0,
+        "bearing": 0.0,
+        "bearingAccuracy": 0.0,
+        "horizontalAccuracy": 5.0,
+        "latitude": {{latitude}},
+        "longitude": {{longitude}},
+        "provider": "fused",
+        "speed": 0.0,
+        "speedAccuracy": 0.5,
+        "time": "{{$isoTimestamp}}",
+        "verticalAccuracy": 0.5
+      },
+      "streamId": "{{session2}}",
+      "streamSequence": 2,
+      "source": "WORK_ORDERS_MOBILE",
+      "time": "{{$isoTimestamp}}",
+      "type": "org.login5:workorders:MaterialTransferredEvent",
+      "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {assertStatusCode, sleep} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check that candidate got updated
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body.find(task => task.transportId === client.global.get("implementId"))
+        const moveQuantity = client.global.get("unload1Quantity") + client.global.get("unload2Quantity")
+
+        client.assert(task.id === null)
+        client.assert(task.moveQuantity.value === moveQuantity)
+        client.assert(task.moves.length === 2)
+    });
+%}
+
+### Pretovarna (user2) unloads to Carrier
+@handshakeId3 = {{$uuid}}
+@handshakeItemId3 = {{$uuid}}
+
+< {%
+    client.global.set("unload3Quantity", 4500)
+%}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId2}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":false,\"fromLocationId\":\"{{implementId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId3}}\",\"handshakeItemId\":\"{{handshakeItemId3}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId3}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload3Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId3}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload3Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"warehouseTransfers\\\":true}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{carrierId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload3Quantity}}.0}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{session2}}",
+        "streamSequence": 3,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$isoTimestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {sleep, assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check candidates after unload to carrier
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const implementTask = response.body.find(task => task.transportId === client.global.get("implementId"))
+        const implementTaskMoveQuantity = client.global.get("unload1Quantity") +
+            client.global.get("unload2Quantity") -
+            client.global.get("unload3Quantity")
+        const loadMove = implementTask.moves.find(move => move.type === "LOAD")
+
+        client.assert(implementTask.id === null)
+        client.assert(implementTask.moves.length === 3)
+        client.assert(implementTask.moveQuantity.value === implementTaskMoveQuantity)
+        client.assert(loadMove.transportId === client.global.get("carrierId"))
+        client.assert(loadMove.quantity.value === client.global.get("unload3Quantity"))
+
+        const carrierTask = response.body.find(task => task.transportId === client.global.get("carrierId"))
+
+        client.assert(carrierTask.id === null)
+        client.assert(carrierTask.moves.length === 1)
+        client.assert(carrierTask.moveQuantity.value === client.global.get("unload3Quantity"))
+    });
+%}
+
+### Pretovarna (user2) unloads to Carrier and marks empty
+@handshakeId4 = {{$uuid}}
+@handshakeItemId4 = {{$uuid}}
+
+< {%
+    client.global.set("unload4Quantity", 3500)
+%}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId2}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":true,\"fromLocationId\":\"{{implementId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId4}}\",\"handshakeItemId\":\"{{handshakeItemId4}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId4}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload4Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId4}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload4Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"warehouseTransfers\\\":true}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{carrierId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload4Quantity}}.0}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{session2}}",
+        "streamSequence": 4,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$isoTimestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {sleep, assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check that Pretovarna not in the list after being emptied
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const implementTask = response.body.find(task => task.transportId === client.global.get("implementId"))
+
+        client.assert(implementTask === undefined)
+    });
+%}
+
+### Create control point task manually
+POST {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "transportId": "{{carrierId}}"
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body
+
+        client.assert(Number.isFinite(task.id));
+        client.assert(task.lastModifiedTimestamp !== null);
+        client.assert(task.transportId === client.global.get("carrierId"))
+        client.assert(task.moveQuantity === null)
+
+        client.global.set("taskId", task.id)
+    });
+%}
+
+### Check candidate got merged to the task
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body.find(task => task.id === client.global.get("taskId"))
+        const moveQuantity = client.global.get("unload3Quantity") + client.global.get("unload4Quantity")
+
+        client.assert(Number.isFinite(task.id));
+        client.assert(Number.isFinite(task.version));
+        client.assert(task.state === "CREATED");
+        client.assert(Number.isFinite(task.createdLatitude))
+        client.assert(Number.isFinite(task.createdLongitude))
+        client.assert(task.moveQuantity.value === moveQuantity)
+        client.assert(task.moves.length === 2)
+    });
+%}
+
+### Get task by id
+GET {{host}}/api/v2/control-point/tasks/{{taskId}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        client.global.set("preUpdateTask", response.body)
+    });
+%}
+
+### Create analysis
+POST {{host}}/api/v2/analysis
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "impurities": 13.37,
+    "moisture": 20,
+    "bulkDensity": {
+        "value": 1337.0,
+        "unit": "kg/hl"
+    },
+    "temperature": {
+        "value": 25.6,
+        "unit": "℃"
+    },
+    "proteins": 12.1,
+    "brokenKernels": 5.1337,
+    "emptyGrains": 10.11,
+    "hasInsects": false
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        client.global.set("analysisId", response.body.id)
+    });
+%}
+
+### Update task
+< {%
+    client.global.set("userQuantity", 9000)
+    client.global.set("userPartnerId", "000001")
+    client.global.set("userDriverId", 877616)
+    client.global.set("userComment", "workflow test comment")
+%}
+
+PUT {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "id": {{preUpdateTask.id}},
+    "version": {{preUpdateTask.version}},
+    "locationGroupName": "ZR",
+    "receiverPartnerId": "{{userPartnerId}}",
+    "driverId": {{userDriverId}},
+    "quantity": {{userQuantity}},
+    "analysis": {
+      "id": {{analysisId}}
+    },
+    "comment": "{{userComment}}"
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body
+        const moveQuantity = client.global.get("unload3Quantity") + client.global.get("unload4Quantity")
+
+        client.assert(task.moveQuantity.value === moveQuantity)
+        client.assert(task.quantity === client.global.get("userQuantity"))
+        client.assert(task.receiverPartnerId === client.global.get("userPartnerId"))
+        client.assert(task.driverId === client.global.get("userDriverId"))
+        client.assert(Number.isFinite(task.analysis.impurities))
+        client.assert(task.comment, client.global.get("userComment"))
+
+        client.global.set("preDispatchTask", response.body)
+    });
+%}
+
+### Dispatch task
+POST {{host}}/api/v2/control-point/tasks/dispatch?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "id": {{preDispatchTask.id}},
+    "version": {{preDispatchTask.version}}
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body
+
+        client.assert(task.dispatchNoteNumber.startsWith("CP-"))
+        client.assert(task.state === "DISPATCHED")
+        client.assert(task.receivingOrderNumber.startsWith("R-"))
+        client.assert(task.receivingOrderVersion === 0)
+        client.assert(task.dispatchOrderNumber.startsWith("D-"))
+        client.assert(task.dispatchOrderVersion === 0)
+        client.assert(Number.isFinite(task.lotId))
+        client.assert(task.dispatchedTimestamp !== null)
+        client.assert(task.dispatchedBy !== null)
+
+        client.global.set("receivingOrderNumber", task.receivingOrderNumber)
+        client.global.set("dispatchOrderNumber", task.dispatchOrderNumber)
+    });
+%}
+
+### Check receiving order
+GET {{host}}/api/v2/wms/receiving-orders?orderNumber={{receivingOrderNumber}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const receivingOrder = response.body[0]
+
+        client.assert(receivingOrder.controlPointTask.id === client.global.get("taskId"))
+    });
+%}
+
+### Check dispatch order
+GET {{host}}/api/v2/wms/dispatch-orders?orderNumber={{dispatchOrderNumber}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const dispatchOrder = response.body[0]
+
+        client.assert(dispatchOrder.controlPointTask.id === client.global.get("taskId"))
+    });
+%}
+
+### Harvester (user1) unloads to Pretovarna (user2) after dispatch
+@handshakeId5 = {{$uuid}}
+@handshakeItemId5 = {{$uuid}}
+
+< {%
+    client.global.set("unload5Quantity", 1000)
+%}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId1}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":true,\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId5}}\",\"handshakeItemId\":\"{{handshakeItemId5}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId5}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId5}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_UNKNOWN\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\"}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{sessionId1}}",
+        "streamSequence": 3,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$timestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username1}}"
+    },
+    {
+      "clientId": "{{clientId2}}",
+      "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationId\":\"{{vehicleId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId5}}\",\"handshakeItemId\":\"{{handshakeItemId5}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId5}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId1}},\\\"username\\\":\\\"{{username1}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{vehicleId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId5}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{implementId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"LOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{implementId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload5Quantity}}.0}",
+      "eventId": "{{$uuid}}",
+      "position": {
+        "altitude": 0.0,
+        "bearing": 0.0,
+        "bearingAccuracy": 0.0,
+        "horizontalAccuracy": 5.0,
+        "latitude": {{latitude}},
+        "longitude": {{longitude}},
+        "provider": "fused",
+        "speed": 0.0,
+        "speedAccuracy": 0.5,
+        "time": "{{$isoTimestamp}}",
+        "verticalAccuracy": 0.5
+      },
+      "streamId": "{{session2}}",
+      "streamSequence": 5,
+      "source": "WORK_ORDERS_MOBILE",
+      "time": "{{$isoTimestamp}}",
+      "type": "org.login5:workorders:MaterialTransferredEvent",
+      "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {assertStatusCode, sleep} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check Pretovarna candidate after dispatch
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body.find(task => task.id === null && task.transportId === client.global.get("implementId"))
+
+        client.assert(task.moveQuantity.value === client.global.get("unload5Quantity"))
+    });
+%}
+
+### Pretovarna (user2) unloads to Carrier after dispatch
+@handshakeId6 = {{$uuid}}
+@handshakeItemId6 = {{$uuid}}
+
+POST {{host}}/api/v2/events
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+[
+    {
+        "clientId": "{{clientId2}}",
+        "data": "{\"bulkMaterial\":true,\"endTime\":\"{{$isoTimestamp}}\",\"fromLocationEmpty\":false,\"fromLocationId\":\"{{implementId}}\",\"fromLocationQr\":\"\",\"handshakeId\":\"{{handshakeId6}}\",\"handshakeItemId\":\"{{handshakeItemId6}}\",\"handshakeRequest\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId6}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload5Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"userId\\\":{{userId2}},\\\"username\\\":\\\"{{username2}}\\\",\\\"warehouseTransfers\\\":false}\",\"handshakeResponse\":\"{\\\"bulkMaterial\\\":true,\\\"fromTransportId\\\":\\\"{{implementId}}\\\",\\\"handshakeItemId\\\":\\\"{{handshakeItemId6}}\\\",\\\"materialId\\\":{{materialId}},\\\"materialLotName\\\":\\\"{{lotName}}\\\",\\\"quantity\\\":{{unload3Quantity}}.0,\\\"timestamp\\\":\\\"{{$isoTimestamp}}\\\",\\\"toTransportId\\\":\\\"{{carrierId}}\\\",\\\"warehouseTransfers\\\":true}\",\"handshakeResponseStatus\":\"ACCEPTED\",\"handshakeTimestamp\":\"{{$isoTimestamp}}\",\"materialId\":{{materialId}},\"materialLotName\":\"{{lotName}}\",\"materialTransferType\":\"UNLOAD\",\"quantityMeasurementType\":\"QUANTITY_TOTAL\",\"startTime\":\"{{$isoTimestamp}}\",\"toLocationId\":\"{{carrierId}}\",\"toLocationQr\":\"\",\"totalAmount\":{{unload5Quantity}}.0}",
+        "eventId": "{{$uuid}}",
+        "position": {
+            "altitude": 0.0,
+            "bearing": 0.0,
+            "bearingAccuracy": 0.0,
+            "horizontalAccuracy": 5.0,
+            "latitude": {{latitude}},
+            "longitude": {{longitude}},
+            "provider": "fused",
+            "speed": 0.0,
+            "speedAccuracy": 0.5,
+            "time": "{{$isoTimestamp}}",
+            "verticalAccuracy": 0.5
+        },
+        "streamId": "{{session2}}",
+        "streamSequence": 6,
+        "source": "WORK_ORDERS_MOBILE",
+        "time": "{{$isoTimestamp}}",
+        "type": "org.login5:workorders:MaterialTransferredEvent",
+        "username": "{{username2}}"
+    }
+]
+
+> {%
+    import {sleep, assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(204)
+    sleep(1)
+%}
+
+### Check Carrier candidate after dispatch
+GET {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const carrierTaskCandidate = response.body.find(task => task.id === null && task.transportId === client.global.get("carrierId"))
+
+        client.assert(carrierTaskCandidate.moveQuantity.value === client.global.get("unload5Quantity"))
+        client.assert(carrierTaskCandidate.moves.length === 1)
+
+        client.global.set("carrierTaskCandidate", carrierTaskCandidate)
+    });
+%}
+
+### Create control point task from carrer task candidate
+POST {{host}}/api/v2/control-point/tasks?latitude={{latitude}}&longitude={{longitude}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+{
+    "moves": [
+        {
+            "handshakeId": "{{carrierTaskCandidate.moves[0].handshakeId}}",
+            "type": "{{carrierTaskCandidate.moves[0].type}}"
+        }
+    ]
+}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(200)
+
+    client.test("Request executed successfully", function () {
+        const task = response.body
+
+        client.assert(Number.isFinite(task.id))
+        client.assert(task.moves.length === 1)
+        client.assert(task.moves[0].handshakeId === client.global.get("carrierTaskCandidate").moves[0].handshakeId)
+
+        client.global.set("taskToDelete", task)
+    });
+%}
+
+### Delete carrier task
+DELETE {{host}}/api/v2/control-point/tasks/{{taskToDelete.id}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(204)
+%}
+
+### Check task deleted
+GET {{host}}/api/v2/control-point/tasks/{{taskToDelete.id}}
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("config-auth-code")}}
+
+> {%
+    import {assertStatusCode} from "../utils/utils"
+
+    assertStatusCode(400)
+
+    client.test("Request executed successfully", function () {
+        const id = client.global.get("taskToDelete").id
+        client.assert(response.body.error.errorMsgs[0].message === `ControlPointTask with ID '${id}' is deleted`)
+    });
+%}

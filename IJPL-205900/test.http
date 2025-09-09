@@ -1,0 +1,32 @@
+< {%
+
+    let algorithm = {
+        name: 'RSASSA-PKCS1-v1_5',
+        modulusLength: 4096,                       // 2048 or 4096 bits recommended
+        publicExponent: new Uint8Array([1, 0, 1]), // 65537 (standard exponent)
+        hash: "SHA-512"
+    };
+    const pair = crypto.subtle.generateKey(algorithm,
+        true,
+        ['sign', 'verify']);
+
+    let otherClaim = 'Servus, HTTP Client Pre Script!!!';
+
+
+    const rsaJwt = jwt.sign({
+        other_claim: otherClaim,
+    }, pair.privateKey, {
+        algorithm: 'RS512'
+    })
+
+
+    console.log(`RSA JWT: ${rsaJwt}`)
+
+    console.log(`RSA verification: ${jwt.verify(rsaJwt, pair.publicKey, {algorithm: 'RS512'})}`)
+
+    let publicKey = btoa(String.fromCharCode(...new Uint8Array(crypto.subtle.exportKey("spki", pair.publicKey))));
+    console.log(`public key: \n-----BEGIN PUBLIC KEY-----\n${publicKey.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`)
+
+
+%}
+GET examples.http-client.intellij.net/anything
