@@ -1,0 +1,65 @@
+< {%
+const pemHeader = "-----BEGIN PRIVATE KEY-----";
+const pemFooter = "-----END PRIVATE KEY-----";
+
+
+let privateKey = `-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDF/0KrDw4iKEZl
+CyoDGVCR8fSyV0OPjGB+y69Bwlb0avga57HK0kzTImU0YWKbYa3g6o0hHy8QFCdV
+T/Fl0Bfa0wKrQSapLBAYvj355Ni1O38SnQ5coR8StTTHx5qcrs4U5k1+SJje4aR5
+VmAY/r60qCu69IT95PT1g+gM1JHtGcfyZau42+xM5tCx/istFDIyffUGj89bEbmT
+UHnCYSbSMoVfI4u5mPBoQ68S4loP2i/+CHkSvzFW9ed4RT4oxhLprL4VaRrJr2aa
+9W9gMrMuBqNlTcBRiCF+KcXArbG42yElxi1HrLxRQFj1Ikk4ARlbihTQN4lHQ9E2
+3wyy7+ixAgMBAAECggEAAJ4VaN3YOjgiBorqPR0ls3Yelw++Otxlw4d5IJa+gON/
+wOsFsMUddm3+sbikcgO0G4XPR1AX3VI5H3nFodz++ZRm3fqpOvTt6lWa2p0frUEk
+O/p3J5MvevZagvMOfjpXhHa6anfPLALmaYXv9LOHwKVXcxpsVVlh6W87R7R+T30J
+Flj0D//f35B4ObMVYsSfhahRLaddaYY2llhPe8WCxX5sNajZzV2HybCRBV950H8P
+cRWS/3x7yxPo+VcvEPEfq5DFR6o3Z6tU33nb9EYuFO6+yjSqB+bhFfeMOTB9rmAS
+PAcBBvnsOoispfLEJt8iFmL6C7VggYxiZ/x7Hqe0dQKBgQDq2gqX39iML1QMxxc8
+9UlsyItaV/Z3ssFR8jnc5lqEpaFoZxuk2ScfOU/8FoA4jueih3F3d8MY4ycxhTup
+vg7uY1TZhoNi2dis1GcETYzqM+5yrhwlbioVFd/RhpHm+GzhVp1VLOMLzYNnpeEz
+LIC4IBGWFumgfJOxRRzV0TZCNQKBgQDX0581zAPPn+W6Z4DzTZtd3O8Itt68FeUb
+EF9g4L+KBX9OMNmp72hS5/cG4n2ic0Wf1GTqSRBDgwr3gBeHZzessiSpYuZeJF35
+zNwC1z7Nkckd70yRd5ouozVc7zCHFWSEBMpcsB1dy7Xc4ISvk1AspBAqK+jV7rkY
+pZd/ckXcDQKBgBEi4879KGHiOjHMfSeXhkoHwBNRg8xsIKsID6zMqiIvq71geKXo
+qnAe0HVGdwipdMFpPKBI/tVcDcoRPK9ADPrcCJ7ur7uQxbymqvWnavbT3zxC9A7P
+IQb016YEObUuv1MZ7NUAN3ju//2aHvqK7sGApYfcGCP7sxMmRdpcL6dZAoGAXDuU
+s2HPUyBLBYEMC23j8pXjFP9JammU8h7qE7WYRTyaLekUa9ni5GM7HxcVh6HpZCdZ
+RQIaUC+lNSXpaDUFBulOX5DjT+IMwx73+sLPlPwzTXahax0Ip9uZh3C0dVYAEacW
+b8vXkOjofE76hSnYPmuSeOMw6pPNSCoj9xP3pNUCgYAqw/g8DnrWjCafIfzYCHa/
+VrO0JrEKhh4JHE6e4nAvzWfal6FBjC+dUWsy07xTB9xPO7x+qezokb29COuuKE7l
+qTCeX6gkgoVf8eZUhydGRHWyK46scdYlLQAfl097+1M533Tc8OofyCfnWtxzBsX8
+a4/7FzcF3EfEPUs1/BnIww==
+-----END PRIVATE KEY-----`;
+let keyContents = privateKey;
+
+if (privateKey.includes(pemHeader)) {
+    keyContents = keyContents
+        .replace(pemHeader, '')
+        .replace(pemFooter, '')
+        .replace(/\\n/g, '') // Updated this to \\n
+        .replace(/\\r/g, ''); // Updated this to \\r
+}
+
+const cryptoKey = crypto.subtle.importKey(
+    'pkcs8',
+    base64ToArrayBuffer(keyContents),
+    {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: {name: 'SHA-256'}
+    },
+    false,
+    ['sign']
+);
+
+function base64ToArrayBuffer(base64) {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+}
+%}
+
+GET http://examples.http-client.intellij.net/anything

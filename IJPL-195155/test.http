@@ -1,0 +1,14 @@
+< {%
+    const file_content= execSync('/bin/cat /Users/minamoto/IdeaProjects/httpClientScripts/IJPL-195155/1MB_file.b64', {
+        maxBuffer: 1 * 1024 * 1024
+    })
+    console.log(file_content.length)
+    request.variables.set("file_content", file_content)
+
+%}
+POST http://examples.http-client.intellij.net
+Content-Type: application/json
+
+> {%
+
+ %}

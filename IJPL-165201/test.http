@@ -1,0 +1,9 @@
+###
+< {%
+    const signature = crypto.hmac.sha3('512')
+        .withTextSecret('customSourceSharedSecret') // get variable from http-client.private.env.json
+        .updateWithText('Servus!')
+        .digest().toHex();
+    console.log(`signature: ${signature}`)
+%}
+POST https://examples.http-client.intellij.net/anything

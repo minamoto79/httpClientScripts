@@ -1,0 +1,7 @@
+< {%
+    Window.btoa('xxx')
+    const data = btoa('Servus, world!!!');
+    console.log(atob(data))
+%}
+
+GET examples.http-client.intellij.net/anything

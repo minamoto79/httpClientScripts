@@ -1,0 +1,12 @@
+GET https://httpbin.org/get
+
+> {%
+    client./*<caret>*/test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+        client.test("Response content-type is json", function() {
+        var type1 = response.contentType.mimeType;
+        client.assert(type1 === "application/json", "Expected 'application/json' but received '" + type1 + "'");
+    });
+%}

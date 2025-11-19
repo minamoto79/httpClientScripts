@@ -1,0 +1,4 @@
+###
+< {% console.log('a'); %}
+
+GET http://examples.http-client.intellij.net/anything
